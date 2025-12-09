@@ -147,6 +147,7 @@ export default function PlannerPage() {
   // UI state
   const [showAddCourseDialog, setShowAddCourseDialog] = useState(false);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
+  const [activeSemester, setActiveSemester] = useState<number | null>(null); // The semester selected for quick-add
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewDraftDialog, setShowNewDraftDialog] = useState(false);
   const [newDraftName, setNewDraftName] = useState("");
@@ -667,8 +668,15 @@ export default function PlannerPage() {
                   "w-[300px] h-full flex flex-col transition-all",
                   getStatusColor(semester.status, isHistorical),
                   isCurrentSemester && "ring-2 ring-blue-400",
-                  dropTargetSemester === semester.semester_number && !isLocked && "ring-2 ring-primary bg-primary/5"
+                  dropTargetSemester === semester.semester_number && !isLocked && "ring-2 ring-primary bg-primary/5",
+                  activeSemester === semester.semester_number && !isLocked && "ring-2 ring-violet-500 shadow-lg",
+                  !isLocked && "cursor-pointer hover:shadow-md"
                 )}
+                onClick={() => {
+                  if (!isLocked) {
+                    setActiveSemester(activeSemester === semester.semester_number ? null : semester.semester_number);
+                  }
+                }}
                 onDragOver={(e) => handleDragOver(e, semester.semester_number, !!isLocked)}
                 onDrop={(e) => !isLocked && handleDrop(e, semester.semester_number)}
               >
@@ -684,8 +692,11 @@ export default function PlannerPage() {
                     
                     <div className="flex flex-col items-end gap-1">
                          <span className="text-muted-foreground text-sm font-semibold">{semester.total_credits} cr</span>
+                         {activeSemester === semester.semester_number && !isLocked && (
+                           <Badge className="bg-violet-100 text-violet-700 text-[10px]">Selected</Badge>
+                         )}
                          {!isLocked && !isHistorical && (
-                             <button onClick={() => handleRemoveSemester(semester.semester_number)} className="text-destructive hover:bg-destructive/10 p-1 rounded" title="Remove Semester">
+                             <button onClick={(e) => { e.stopPropagation(); handleRemoveSemester(semester.semester_number); }} className="text-destructive hover:bg-destructive/10 p-1 rounded" title="Remove Semester">
                                  <Trash2 className="h-4 w-4" />
                              </button>
                          )}
@@ -842,7 +853,11 @@ export default function PlannerPage() {
           {showRecommended && (
             <CardContent className="space-y-6 pt-0">
                 <div className="text-sm text-muted-foreground mb-4">
-                  Drag courses to your plan or click to add to next available semester
+                  {activeSemester ? (
+                    <span>Click <Plus className="inline h-3 w-3" /> on a course to add it to <strong>{semesters.find(s => s.semester_number === activeSemester)?.semester_name || 'the selected semester'}</strong>. Click the semester card again to deselect.</span>
+                  ) : (
+                    <span>Click on a semester card to select it, then click <Plus className="inline h-3 w-3" /> on courses to add them. Or drag courses to your plan.</span>
+                  )}
                 </div>
 
               {recommendedCourses.degree_courses?.length > 0 && (
@@ -878,10 +893,11 @@ export default function PlannerPage() {
                          {/* Quick add button */}
                           <div className="border-l pl-2 ml-1">
                                 <Plus className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" onClick={() => {
-                                    // Find first draft semester
-                                    const firstDraftSem = semesters.find(s => !s.is_locked && !s.is_historical);
-                                    if (firstDraftSem) handleAddCourse(course.course_id, firstDraftSem.semester_number);
-                                    else toast.error("Please add a semester first");
+                                    if (activeSemester) {
+                                      handleAddCourse(course.course_id, activeSemester);
+                                    } else {
+                                      toast.error("Please select a semester first by clicking on it");
+                                    }
                                 }} />
                           </div>
                       </div>
@@ -927,9 +943,11 @@ export default function PlannerPage() {
                            )}
                            <div className="border-l pl-2 ml-1">
                                  <Plus className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" onClick={() => {
-                                     const firstDraftSem = semesters.find(s => !s.is_locked && !s.is_historical);
-                                     if (firstDraftSem) handleAddCourse(course.course_id, firstDraftSem.semester_number);
-                                     else toast.error("Please add a semester first");
+                                     if (activeSemester) {
+                                       handleAddCourse(course.course_id, activeSemester);
+                                     } else {
+                                       toast.error("Please select a semester first by clicking on it");
+                                     }
                                  }} />
                            </div>
                         </div>
@@ -1100,9 +1118,11 @@ export default function PlannerPage() {
                          )}
                          <div className="border-l pl-2 ml-1">
                                <Plus className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" onClick={() => {
-                                   const firstDraftSem = semesters.find(s => !s.is_locked && !s.is_historical);
-                                   if (firstDraftSem) handleAddCourse(course.course_id, firstDraftSem.semester_number);
-                                   else toast.error("Please add a semester first");
+                                   if (activeSemester) {
+                                     handleAddCourse(course.course_id, activeSemester);
+                                   } else {
+                                     toast.error("Please select a semester first by clicking on it");
+                                   }
                                }} />
                          </div>
                       </div>
@@ -1395,6 +1415,28 @@ export default function PlannerPage() {
               method: "DELETE",
             });
             return res.ok;
+          } catch {
+            return false;
+          }
+        }}
+        onAddSemester={async (afterSemester: number, semesterName: string) => {
+          if (!activeDraft) return false;
+          try {
+            // Check if adding summer by looking at semester name
+            const isSummer = semesterName.toLowerCase().includes('summer');
+            const res = await fetch("/api/student/plan/semesters", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ 
+                draft_id: activeDraft.draft_id,
+                force_summer: isSummer 
+              })
+            });
+            if (res.ok) {
+              loadPlanData(activeDraft.draft_id);
+              return true;
+            }
+            return false;
           } catch {
             return false;
           }

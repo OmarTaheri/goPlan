@@ -233,7 +233,39 @@ export function AIPlannerPopup({
   const getSemesterName = (semesterNum?: number) => {
     if (!semesterNum) return "Unknown";
     const sem = semesters.find(s => s.semester_number === semesterNum);
-    return sem?.semester_name || `Semester ${semesterNum}`;
+    if (sem?.semester_name) return sem.semester_name;
+    
+    // Try to compute semester name from the pattern
+    // Find the last known semester to use as a reference
+    const sortedSemesters = [...semesters].sort((a, b) => a.semester_number - b.semester_number);
+    const lastKnown = sortedSemesters[sortedSemesters.length - 1];
+    
+    if (lastKnown?.semester_name) {
+      // Parse the last known semester name (e.g., "Fall 2025" or "Spring 2026")
+      const match = lastKnown.semester_name.match(/(Fall|Spring|Summer)\s+(\d{4})/i);
+      if (match) {
+        const terms = ["Spring", "Fall"]; // Summer is special, skip in normal progression
+        let termIndex = match[1].toLowerCase() === "fall" ? 1 : 0;
+        let year = parseInt(match[2]);
+        let baseNum = lastKnown.semester_number;
+        
+        // Calculate steps forward from last known
+        const stepsForward = semesterNum - baseNum;
+        
+        for (let i = 0; i < stepsForward; i++) {
+          if (termIndex === 1) { // Fall -> Spring (next year)
+            termIndex = 0;
+            year++;
+          } else { // Spring -> Fall (same year)
+            termIndex = 1;
+          }
+        }
+        
+        return `${terms[termIndex]} ${year}`;
+      }
+    }
+    
+    return `Semester ${semesterNum}`;
   };
 
   const formatAction = (action: AIAction) => {
@@ -248,9 +280,9 @@ export function AIPlannerPopup({
       case "generate_plan":
         return `Add ${action.courses?.length || 0} courses to plan`;
       case "add_semester":
-        return `Add semester "${action.semester_name}" after semester ${action.after_semester}`;
+        return `Add semester "${action.semester_name}" after ${getSemesterName(action.after_semester)}`;
       case "fill_semester":
-        return `Auto-fill semester ${action.semester}`;
+        return `Auto-fill ${getSemesterName(action.semester)}`;
       case "reject":
         return `Cannot perform: ${action.reason}`;
       default:

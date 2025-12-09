@@ -43,7 +43,7 @@ export default function LoginPage() {
           <div className="w-full max-w-md space-y-8">
             {/* Logo and Title */}
             <div className="space-y-4 text-center">
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-0">
                 <Image
                   src="/logo.png"
                   alt="GoPlan logo"
