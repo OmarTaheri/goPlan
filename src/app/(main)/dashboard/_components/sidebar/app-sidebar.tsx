@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-
-import { GraduationCap } from "lucide-react";
 
 import {
   Sidebar,
@@ -70,15 +69,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <Link prefetch={false} href="/">
-                <GraduationCap />
-                <span className="text-base font-semibold">{APP_CONFIG.name}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
+                <Link prefetch={false} href="/">
+                  <Image
+                    src="/logo.png"
+                    alt={`${APP_CONFIG.name} logo`}
+                    width={32}
+                    height={32}
+                    className="h-8 w-8"
+                    priority
+                  />
+                  <span className="text-base font-semibold">{APP_CONFIG.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navItems} userRole={user?.role || null} />

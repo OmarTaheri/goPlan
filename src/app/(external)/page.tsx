@@ -1,9 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  GraduationCap,
   MousePointerClick,
   Bot,
   BarChart3,
@@ -112,8 +112,15 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <GraduationCap className="h-8 w-8" />
+            <Link href="/" className="flex items-center gap-1.5">
+              <Image
+                src="/logo.png"
+                alt="GoPlan logo"
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
+                priority
+              />
               <span className="text-2xl font-light">
                 Go<span className="font-black">Plan</span>
               </span>
@@ -295,7 +302,13 @@ export default function Home() {
             <Card className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-orange-500 border-4 border-black mx-auto mb-4 flex items-center justify-center">
-                  <GraduationCap className="h-8 w-8 text-white" />
+                  <Image
+                    src="/logo.png"
+                    alt="GoPlan logo"
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 object-contain"
+                  />
                 </div>
                 <div className="text-4xl font-black mb-2">1</div>
                 <h3 className="text-xl font-bold mb-2">Pick your program</h3>
@@ -768,8 +781,14 @@ export default function Home() {
       <footer className="bg-black text-white py-12 border-t-4 border-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-6 w-6" />
+            <div className="flex items-center gap-1.5">
+              <Image
+                src="/logo.png"
+                alt="GoPlan logo"
+                width={24}
+                height={24}
+                className="h-6 w-6 object-contain"
+              />
               <span className="text-xl font-light">
                 Go<span className="font-bold">Plan</span>
               </span>

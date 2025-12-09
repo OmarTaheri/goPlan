@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
 
       semesters.push({
         semester_number: semesterCounter,
-        semester_name: firstCourse.semester_name || `Semester ${semesterCounter}`,
+        semester_name: firstCourse.semester_name || `Term ${semesterCounter}`,
         courses: courses.map((tc, idx) => ({
           plan_id: -tc.transcript_id,
           course_id: tc.course_id,
@@ -255,7 +255,7 @@ export async function GET(request: NextRequest) {
             isActiveForApproval = !!def.is_active;
         } else {
              // Should not happen if we iterate keys of map
-            semesterName = `Semester ${i}`;
+            semesterName = `Future Semester`;
         }
     
       const semesterPlans = plans.filter(p => p.semester_number === futureSemNum);

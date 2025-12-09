@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
-import { GraduationCap, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { GoPlanLoginForm } from "@/app/(main)/auth/_components/goplan-login-form";
 
@@ -42,10 +43,15 @@ export default function LoginPage() {
           <div className="w-full max-w-md space-y-8">
             {/* Logo and Title */}
             <div className="space-y-4 text-center">
-              <div className="flex items-center justify-center gap-3">
-                <div className="w-14 h-14 bg-black flex items-center justify-center">
-                  <GraduationCap className="h-8 w-8 text-white" />
-                </div>
+              <div className="flex items-center justify-center gap-2">
+                <Image
+                  src="/logo.png"
+                  alt="GoPlan logo"
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 object-contain"
+                  priority
+                />
                 <span className="text-3xl font-light">
                   Go<span className="font-black">Plan</span>
                 </span>

@@ -100,6 +100,87 @@ async function checkPrerequisites(
   return { prereqs_met: false, missing_prereqs: missing };
 }
 
+/**
+ * Get the list of prerequisite course IDs for a course (returns the smallest/easiest set to satisfy)
+ */
+async function getPrerequisiteCourseIds(courseId: number): Promise<number[]> {
+  const [dependencies] = await query<CourseDependency>(
+    `SELECT cd.dependency_course_id, c.course_code as dependency_course_code, cd.logic_set_id
+     FROM course_dependencies cd
+     JOIN courses c ON cd.dependency_course_id = c.course_id
+     WHERE cd.course_id = ? AND cd.dependency_type = 'PREREQUISITE'`,
+    [courseId],
+  );
+
+  if (dependencies.length === 0) {
+    return [];
+  }
+
+  // Group by logic_set_id
+  const logicSets = new Map<number, CourseDependency[]>();
+  for (const dep of dependencies) {
+    const set = logicSets.get(dep.logic_set_id) ?? [];
+    set.push(dep);
+    logicSets.set(dep.logic_set_id, set);
+  }
+
+  // Return the smallest set (easiest to satisfy)
+  let smallestSet: CourseDependency[] = [];
+  let minSize = Infinity;
+  for (const [, setDeps] of logicSets) {
+    if (setDeps.length < minSize) {
+      minSize = setDeps.length;
+      smallestSet = setDeps;
+    }
+  }
+
+  return smallestSet.map((dep) => dep.dependency_course_id);
+}
+
+/**
+ * Count prerequisites for a course (returns minimum count across OR sets)
+ */
+async function countPrerequisites(courseId: number): Promise<number> {
+  const prereqIds = await getPrerequisiteCourseIds(courseId);
+  return prereqIds.length;
+}
+
+/**
+ * Sort courses by prerequisite preference:
+ * 1. Mandatory courses first
+ * 2. Courses with met prerequisites
+ * 3. Courses with fewer prerequisites
+ */
+async function sortCoursesByPrerequisitePreference(
+  courses: GroupCourse[],
+  completedCourseIds: Set<number>,
+): Promise<GroupCourse[]> {
+  // Get prereq info for all courses
+  const coursePrereqInfo = await Promise.all(
+    courses.map(async (course) => {
+      const prereqCount = await countPrerequisites(course.course_id);
+      const { prereqs_met } = await checkPrerequisites(course.course_id, completedCourseIds);
+      return { course, prereqCount, prereqs_met };
+    }),
+  );
+
+  // Sort: mandatory first, then prereqs_met, then by prereqCount
+  coursePrereqInfo.sort((a, b) => {
+    // Mandatory courses first
+    if (a.course.is_mandatory !== b.course.is_mandatory) {
+      return a.course.is_mandatory ? -1 : 1;
+    }
+    // Courses with met prereqs second
+    if (a.prereqs_met !== b.prereqs_met) {
+      return a.prereqs_met ? -1 : 1;
+    }
+    // Fewer prereqs preferred
+    return a.prereqCount - b.prereqCount;
+  });
+
+  return coursePrereqInfo.map((info) => info.course);
+}
+
 const logPath = path.join(process.cwd(), "auto-fill-debug.txt");
 
 function logDebug(message: string) {
@@ -335,10 +416,12 @@ export async function POST(request: NextRequest) {
                 rgc.group_id, rgc.is_mandatory
          FROM requirement_group_courses rgc
          JOIN courses c ON rgc.course_id = c.course_id
-         WHERE rgc.group_id = ? AND c.is_active = TRUE
-         ORDER BY rgc.is_mandatory DESC, c.course_code`,
+         WHERE rgc.group_id = ? AND c.is_active = TRUE`,
         [group.group_id],
       );
+
+      // Sort courses by prerequisite preference
+      const sortedCourses = await sortCoursesByPrerequisitePreference(groupCourses, willBeCompleted);
 
       // Calculate credits already fulfilled (Historical + Planned + Added in Step 6)
       let fulfilledCredits = 0;
@@ -361,7 +444,7 @@ export async function POST(request: NextRequest) {
 
       if (remainingCredits <= 0) continue;
 
-      for (const course of groupCourses) {
+      for (const course of sortedCourses) {
         if (remainingCredits <= 0) break;
 
         // Skip if already taken, planned, or added
@@ -371,22 +454,59 @@ export async function POST(request: NextRequest) {
 
         const { prereqs_met, missing_prereqs } = await checkPrerequisites(course.course_id, willBeCompleted);
 
-        // For non-mandatory courses in a competitive bucket (like major electives),
-        // we might only want to auto-fill if prereqs are met to be safe.
-        // But for mandatory courses, we should suggest them even if prereqs missing (with warning)
+        // If the course is mandatory and has unmet prerequisites, add the prerequisites first
+        if (course.is_mandatory && !prereqs_met) {
+          const prereqIds = await getPrerequisiteCourseIds(course.course_id);
+          
+          // Add missing prerequisites to semester 1
+          for (const prereqId of prereqIds) {
+            if (!skipCourseIds.has(prereqId) && !addedCourseIds.has(prereqId)) {
+              const [prereqInfo] = await query<CourseInfo>(
+                `SELECT course_id, course_code, title, credits FROM courses WHERE course_id = ? AND is_active = TRUE`,
+                [prereqId],
+              );
+              if (prereqInfo.length > 0) {
+                const prereq = prereqInfo[0];
+                additions.push({
+                  course_id: prereq.course_id,
+                  course_code: prereq.course_code,
+                  title: prereq.title,
+                  credits: prereq.credits,
+                  suggested_semester: 1, // Add prereq to first semester
+                  prereqs_met: true, // Assume prereq itself doesn't have prereqs for now
+                  missing_prereqs: [],
+                  category: `Prerequisite for ${course.course_code}`,
+                });
+                addedCourseIds.add(prereq.course_id);
+                willBeCompleted.add(prereq.course_id);
+              }
+            }
+          }
 
-        const targetSemester = 1;
-
-        additions.push({
-          course_id: course.course_id,
-          course_code: course.course_code,
-          title: course.title,
-          credits: course.credits,
-          suggested_semester: targetSemester,
-          prereqs_met,
-          missing_prereqs,
-          category: group.name,
-        });
+          // Add the course to semester 2 (after its prereqs)
+          additions.push({
+            course_id: course.course_id,
+            course_code: course.course_code,
+            title: course.title,
+            credits: course.credits,
+            suggested_semester: 2, // Course goes to second semester
+            prereqs_met: true, // Will be met after prereqs are taken
+            missing_prereqs: [],
+            category: group.name,
+          });
+        } else {
+          // No prereqs needed or they're met - add to semester 1
+          additions.push({
+            course_id: course.course_id,
+            course_code: course.course_code,
+            title: course.title,
+            credits: course.credits,
+            suggested_semester: 1,
+            prereqs_met,
+            missing_prereqs,
+            category: group.name,
+          });
+        }
 
         addedCourseIds.add(course.course_id);
         willBeCompleted.add(course.course_id);
@@ -411,10 +531,12 @@ export async function POST(request: NextRequest) {
                         rgc.group_id, rgc.is_mandatory
                  FROM requirement_group_courses rgc
                  JOIN courses c ON rgc.course_id = c.course_id
-                 WHERE rgc.group_id = ? AND c.is_active = TRUE
-                 ORDER BY rgc.is_mandatory DESC, c.course_code`,
+                 WHERE rgc.group_id = ? AND c.is_active = TRUE`,
           [group.group_id],
         );
+
+        // Sort courses by prerequisite preference
+        const sortedCourses = await sortCoursesByPrerequisitePreference(groupCourses, willBeCompleted);
 
         logDebug(`Group ${group.name} (${group.group_id}): Found ${groupCourses.length} courses`);
 
@@ -442,7 +564,7 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        for (const course of groupCourses) {
+        for (const course of sortedCourses) {
           if (remainingCredits <= 0) break;
           if (skipCourseIds.has(course.course_id) || addedCourseIds.has(course.course_id)) {
             continue;
@@ -452,16 +574,58 @@ export async function POST(request: NextRequest) {
 
           logDebug(`Adding ${course.course_code} to Minor. Prereqs met: ${prereqs_met}`);
 
-          additions.push({
-            course_id: course.course_id,
-            course_code: course.course_code,
-            title: course.title,
-            credits: course.credits,
-            suggested_semester: 1, // Suggest for next available
-            prereqs_met,
-            missing_prereqs,
-            category: `Minor: ${group.name}`,
-          });
+          // If the course has unmet prerequisites, add the prerequisites first
+          if (!prereqs_met) {
+            const prereqIds = await getPrerequisiteCourseIds(course.course_id);
+            
+            // Add missing prerequisites to semester 1
+            for (const prereqId of prereqIds) {
+              if (!skipCourseIds.has(prereqId) && !addedCourseIds.has(prereqId)) {
+                const [prereqInfo] = await query<CourseInfo>(
+                  `SELECT course_id, course_code, title, credits FROM courses WHERE course_id = ? AND is_active = TRUE`,
+                  [prereqId],
+                );
+                if (prereqInfo.length > 0) {
+                  const prereq = prereqInfo[0];
+                  additions.push({
+                    course_id: prereq.course_id,
+                    course_code: prereq.course_code,
+                    title: prereq.title,
+                    credits: prereq.credits,
+                    suggested_semester: 1,
+                    prereqs_met: true,
+                    missing_prereqs: [],
+                    category: `Prerequisite for ${course.course_code}`,
+                  });
+                  addedCourseIds.add(prereq.course_id);
+                  willBeCompleted.add(prereq.course_id);
+                }
+              }
+            }
+
+            // Add the course to semester 2
+            additions.push({
+              course_id: course.course_id,
+              course_code: course.course_code,
+              title: course.title,
+              credits: course.credits,
+              suggested_semester: 2,
+              prereqs_met: true,
+              missing_prereqs: [],
+              category: `Minor: ${group.name}`,
+            });
+          } else {
+            additions.push({
+              course_id: course.course_id,
+              course_code: course.course_code,
+              title: course.title,
+              credits: course.credits,
+              suggested_semester: 1,
+              prereqs_met,
+              missing_prereqs,
+              category: `Minor: ${group.name}`,
+            });
+          }
 
           addedCourseIds.add(course.course_id);
           willBeCompleted.add(course.course_id);

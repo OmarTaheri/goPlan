@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Search, ChevronLeft, ChevronRight, Lock, AlertCircle, X, CheckCircle, Clock, Send, GripVertical, ChevronDown, ChevronUp, BookOpen, GraduationCap, Library, Trash2, AlertTriangle, Wand2 } from "lucide-react";
+import { Loader2, Plus, Search, ChevronLeft, ChevronRight, Lock, AlertCircle, X, CheckCircle, Clock, Send, GripVertical, ChevronDown, ChevronUp, BookOpen, GraduationCap, Library, Trash2, AlertTriangle, Wand2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { CourseInfoPopup } from "./_components/CourseInfoPopup";
+import { AIPlannerPopup } from "./_components/AIPlannerPopup";
 
 interface Course {
   plan_id: number;
@@ -155,6 +156,7 @@ export default function PlannerPage() {
   const [recommendedCourses, setRecommendedCourses] = useState<RecommendedCoursesData | null>(null);
   const [showRecommended, setShowRecommended] = useState(true);
   const [expandedGenEdCategories, setExpandedGenEdCategories] = useState<Set<number>>(new Set());
+  const [genEdFlatView, setGenEdFlatView] = useState(true); // true = flat (default), false = collapsible
   
   // Auto-fill state
   const [autoFillLoading, setAutoFillLoading] = useState(false);
@@ -170,6 +172,9 @@ export default function PlannerPage() {
     grade?: string | null;
   } | null>(null);
   const [showCoursePopup, setShowCoursePopup] = useState(false);
+  
+  // AI Planner popup state
+  const [showAIPlanner, setShowAIPlanner] = useState(false);
   
   // Drag state
   interface DragItem {
@@ -437,6 +442,8 @@ export default function PlannerPage() {
     if (type === 'RECOMMENDED') {
         setDragItem({ type: 'RECOMMENDED', course: item });
         e.dataTransfer.setData("application/json", JSON.stringify({ type: 'RECOMMENDED', ...item }));
+        // Auto-scroll to top so user can see semester columns
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
         setDragItem({ type: 'PLAN', planItem: item, originSemester });
         e.dataTransfer.setData("application/json", JSON.stringify({ type: 'PLAN', ...item, originSemester }));
@@ -599,6 +606,16 @@ export default function PlannerPage() {
             Auto-fill
           </Button>
 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAIPlanner(true)}
+            className="gap-2 border-violet-200 text-violet-700 hover:bg-violet-50"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Planner
+          </Button>
+
           <Button variant="outline" size="icon" onClick={() => scrollContainer("left")}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -660,7 +677,7 @@ export default function PlannerPage() {
                     <div>
                       <CardTitle className={cn("text-lg", isHistorical && "text-muted-foreground")}>
                         {isHistorical && <Lock className="h-4 w-4 inline mr-1" />}
-                        {semester.semester_name || `Semester ${semester.semester_number}`}
+                        {semester.semester_name || (semester.term ? `${semester.term.charAt(0)}${semester.term.slice(1).toLowerCase()} ${semester.year}` : "Unknown Term")}
                       </CardTitle>
                       {getStatusBadge(semester.status, isHistorical)}
                     </div>
@@ -728,7 +745,10 @@ export default function PlannerPage() {
                           </div>
                           {!isLocked && course.plan_id > 0 && (
                             <button
-                              onClick={() => handleRemoveCourse(course.plan_id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveCourse(course.plan_id);
+                              }}
                               className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center text-xs transition-opacity"
                             >
                               <X className="h-3 w-3" />
@@ -870,14 +890,128 @@ export default function PlannerPage() {
                 </div>
               )}
 
-             {/* GenEds */}
+             {/* Minor Courses - Now above GenEd */}
+              {recommendedCourses.minor_courses && (
+                <div className="mt-4">
+                   <div className="flex items-center gap-2 mb-3">
+                    <GraduationCap className="h-4 w-4 text-orange-600" />
+                    <h3 className="font-semibold text-sm">Minor Courses ({recommendedCourses.minor_name || 'Minor'})</h3>
+                    {recommendedCourses.minor_courses.length === 0 && (
+                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">All Selected</Badge>
+                    )}
+                  </div>
+                  {recommendedCourses.minor_courses.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {recommendedCourses.minor_courses.map((course) => (
+                        <div
+                          key={course.course_id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, 'RECOMMENDED', course)}
+                          className={cn(
+                            "flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm",
+                            !course.prereqs_met && "border-2 border-red-500 bg-red-50/30"
+                          )}
+                          title={!course.prereqs_met ? `Prerequisites not met: ${course.missing_prereqs.join(', ')}` : course.title}
+                        >
+                           <GripVertical className="h-3 w-3 text-muted-foreground/50" />
+                           {!course.prereqs_met && (
+                             <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+                           )}
+                           <div>
+                              <div className="font-mono text-xs font-bold">{course.course_code}</div>
+                              <div className="text-xs text-muted-foreground truncate max-w-[120px]">{course.title}</div>
+                           </div>
+                           <Badge variant="secondary" className="text-[10px] px-1 h-5">{course.credits}cr</Badge>
+                           {course.recommended_semester && (
+                             <Badge variant="outline" className="text-[10px] px-1 h-5 bg-orange-50 text-orange-700 border-orange-200">S{course.recommended_semester}</Badge>
+                           )}
+                           <div className="border-l pl-2 ml-1">
+                                 <Plus className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" onClick={() => {
+                                     const firstDraftSem = semesters.find(s => !s.is_locked && !s.is_historical);
+                                     if (firstDraftSem) handleAddCourse(course.course_id, firstDraftSem.semester_number);
+                                     else toast.error("Please add a semester first");
+                                 }} />
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">All minor courses have been added to your plan.</p>
+                  )}
+                </div>
+              )}
+
+             {/* GenEds - Now below Minor */}
              {recommendedCourses.gened_categories?.length > 0 && (
                  <div className="mt-4">
                      <div className="flex items-center gap-2 mb-3">
                         <Library className="h-4 w-4 text-purple-600" />
                         <h3 className="font-semibold text-sm">General Education</h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground"
+                          onClick={() => setGenEdFlatView(!genEdFlatView)}
+                        >
+                          {genEdFlatView ? "Show Collapsible" : "Show Flat"}
+                        </Button>
                      </div>
-                     <div className="space-y-2">
+                     
+                     {/* Flat View (default) */}
+                     {genEdFlatView ? (
+                       <div className="space-y-4">
+                         {recommendedCourses.gened_categories.map(cat => (
+                           <div key={cat.group_id}>
+                             <div className="flex items-center gap-2 mb-2">
+                               {cat.fulfilled ? <CheckCircle className="h-4 w-4 text-green-600"/> : <div className="h-4 w-4 rounded-full border-2"/> }
+                               <span className={cn("text-sm font-medium", cat.fulfilled && "text-muted-foreground")}>{cat.category_name}</span>
+                               <Badge variant="outline" className="text-[10px] ml-1">{cat.credits_earned}/{cat.credits_required} cr</Badge>
+                               {cat.fulfilled && (
+                                 <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">All Selected</Badge>
+                               )}
+                             </div>
+                             {!cat.fulfilled && cat.courses.length > 0 && (
+                               <div className="flex flex-wrap gap-2 ml-6">
+                                 {cat.courses.map(course => (
+                                   <div
+                                     key={course.course_id}
+                                     draggable
+                                     onDragStart={(e) => handleDragStart(e, 'RECOMMENDED', course)}
+                                     className={cn(
+                                       "flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab active:cursor-grabbing hover:shadow-sm",
+                                       !course.prereqs_met && "border-2 border-red-500 bg-red-50/30"
+                                     )}
+                                     title={!course.prereqs_met ? `Prerequisites not met: ${course.missing_prereqs.join(', ')}` : course.title}
+                                   >
+                                     <GripVertical className="h-3 w-3 text-muted-foreground/50" />
+                                     {!course.prereqs_met && (
+                                       <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+                                     )}
+                                     <div>
+                                       <div className="font-mono text-xs font-bold">{course.course_code}</div>
+                                       <div className="text-xs text-muted-foreground truncate max-w-[120px]">{course.title}</div>
+                                     </div>
+                                     <Badge variant="secondary" className="text-[10px] h-5">{course.credits}</Badge>
+                                     {course.recommended_semester && (
+                                       <Badge variant="outline" className="text-[10px] h-5 bg-purple-50 text-purple-700 border-purple-200">S{course.recommended_semester}</Badge>
+                                     )}
+                                     <div className="border-l pl-2 ml-1">
+                                       <Plus className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" onClick={() => {
+                                         const firstDraftSem = semesters.find(s => !s.is_locked && !s.is_historical);
+                                         if (firstDraftSem) handleAddCourse(course.course_id, firstDraftSem.semester_number);
+                                         else toast.error("Please add a semester first");
+                                       }} />
+                                     </div>
+                                   </div>
+                                 ))}
+                               </div>
+                             )}
+                           </div>
+                         ))}
+                       </div>
+                     ) : (
+                       /* Collapsible View */
+                       <div className="space-y-2">
                          {recommendedCourses.gened_categories.map(cat => (
                              <div key={cat.group_id} className="border rounded-lg overflow-hidden">
                                 <div 
@@ -893,6 +1027,9 @@ export default function PlannerPage() {
                                         {cat.fulfilled ? <CheckCircle className="h-4 w-4 text-green-600"/> : <div className="h-4 w-4 rounded-full border-2"/> }
                                         <span className={cn("text-sm font-medium", cat.fulfilled && "text-muted-foreground")}>{cat.category_name}</span>
                                         <Badge variant="outline" className="text-[10px] ml-1">{cat.credits_earned}/{cat.credits_required} cr</Badge>
+                                        {cat.fulfilled && (
+                                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">All Selected</Badge>
+                                        )}
                                     </div>
                                     <ChevronDown className={cn("h-4 w-4 transition-transform", expandedGenEdCategories.has(cat.group_id) && "rotate-180")} />
                                 </div>
@@ -924,53 +1061,11 @@ export default function PlannerPage() {
                                 )}
                              </div>
                          ))}
-                     </div>
+                       </div>
+                     )}
                  </div>
              )}
 
-              {/* Minor Courses */}
-              {recommendedCourses.minor_courses && recommendedCourses.minor_courses.length > 0 && (
-                <div className="mt-4">
-                   <div className="flex items-center gap-2 mb-3">
-                    <GraduationCap className="h-4 w-4 text-orange-600" />
-                    <h3 className="font-semibold text-sm">Minor Courses ({recommendedCourses.minor_name || 'Minor'})</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {recommendedCourses.minor_courses.map((course) => (
-                      <div
-                        key={course.course_id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, 'RECOMMENDED', course)}
-                        className={cn(
-                          "flex items-center gap-2 p-2 rounded-md border bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm",
-                          !course.prereqs_met && "border-2 border-red-500 bg-red-50/30"
-                        )}
-                        title={!course.prereqs_met ? `Prerequisites not met: ${course.missing_prereqs.join(', ')}` : course.title}
-                      >
-                         <GripVertical className="h-3 w-3 text-muted-foreground/50" />
-                         {!course.prereqs_met && (
-                           <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
-                         )}
-                         <div>
-                            <div className="font-mono text-xs font-bold">{course.course_code}</div>
-                            <div className="text-xs text-muted-foreground truncate max-w-[120px]">{course.title}</div>
-                         </div>
-                         <Badge variant="secondary" className="text-[10px] px-1 h-5">{course.credits}cr</Badge>
-                         {course.recommended_semester && (
-                           <Badge variant="outline" className="text-[10px] px-1 h-5 bg-orange-50 text-orange-700 border-orange-200">S{course.recommended_semester}</Badge>
-                         )}
-                         <div className="border-l pl-2 ml-1">
-                               <Plus className="h-4 w-4 text-muted-foreground hover:text-primary cursor-pointer" onClick={() => {
-                                   const firstDraftSem = semesters.find(s => !s.is_locked && !s.is_historical);
-                                   if (firstDraftSem) handleAddCourse(course.course_id, firstDraftSem.semester_number);
-                                   else toast.error("Please add a semester first");
-                               }} />
-                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Concentration Courses */}
               {recommendedCourses.concentration_courses && recommendedCourses.concentration_courses.length > 0 && (
@@ -1217,6 +1312,94 @@ export default function PlannerPage() {
           setShowCoursePopup(false);
           setSelectedCourseForPopup(null);
         }}
+      />
+
+      {/* AI Planner Popup */}
+      <AIPlannerPopup
+        open={showAIPlanner}
+        onClose={() => setShowAIPlanner(false)}
+        semesters={semesters}
+        majorName={recommendedCourses?.major_name}
+        minorName={recommendedCourses?.minor_name || undefined}
+        historicalSemesters={historicalSemesters}
+        onAddCourse={async (courseCode: string, semesterNum: number) => {
+          // Find course by code
+          const course = courses.find(c => c.course_code === courseCode);
+          if (!course) {
+            toast.error(`Course ${courseCode} not found`);
+            return false;
+          }
+          try {
+            const planSemesterNumber = semesterNum - historicalSemesters;
+            if (planSemesterNumber < 1) {
+              toast.error("Cannot add to historical semester");
+              return false;
+            }
+            const res = await fetch("/api/student/plan", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                course_id: course.course_id,
+                semester_number: planSemesterNumber,
+                draft_id: activeDraft?.draft_id,
+              }),
+            });
+            return res.ok;
+          } catch {
+            return false;
+          }
+        }}
+        onMoveCourse={async (courseCode: string, toSemester: number) => {
+          // Find course in plan
+          let planItem: Course | undefined;
+          for (const sem of semesters) {
+            planItem = sem.courses.find(c => c.course_code === courseCode);
+            if (planItem) break;
+          }
+          if (!planItem || planItem.plan_id < 0) {
+            toast.error(`Cannot move ${courseCode}`);
+            return false;
+          }
+          try {
+            const targetPlanSemester = toSemester - historicalSemesters;
+            if (targetPlanSemester < 1) {
+              toast.error("Cannot move to historical semester");
+              return false;
+            }
+            const res = await fetch("/api/student/plan/move", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                plan_id: planItem.plan_id,
+                target_semester_number: targetPlanSemester,
+              }),
+            });
+            return res.ok;
+          } catch {
+            return false;
+          }
+        }}
+        onRemoveCourse={async (courseCode: string) => {
+          // Find course in plan
+          let planItem: Course | undefined;
+          for (const sem of semesters) {
+            planItem = sem.courses.find(c => c.course_code === courseCode);
+            if (planItem) break;
+          }
+          if (!planItem || planItem.plan_id < 0) {
+            toast.error(`Cannot remove ${courseCode}`);
+            return false;
+          }
+          try {
+            const res = await fetch(`/api/student/plan/${planItem.plan_id}`, {
+              method: "DELETE",
+            });
+            return res.ok;
+          } catch {
+            return false;
+          }
+        }}
+        onRefresh={refreshAll}
       />
     </div>
   );

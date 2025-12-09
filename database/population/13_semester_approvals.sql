@@ -1,23 +1,29 @@
--- 13. SEMESTER APPROVALS (Amina only)
+-- 13. SEMESTER APPROVALS
 -- ==========================================================
-INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_status, advisor_comments, approved_at) VALUES
--- Historical approvals from Amina's advisor (user_id = 4)
-(23, 1, 4, 'APPROVED', 'Great start to the CS program. Excellent course selection.', '2021-08-25'),
-(23, 2, 4, 'APPROVED', 'Good progress on prerequisites.', '2022-01-10'),
-(23, 4, 4, 'APPROVED', 'Nice mix of core CS and math courses.', '2022-08-20'),
-(23, 5, 4, 'APPROVED', 'On track for junior year. Consider research opportunities.', '2023-01-08'),
-(23, 7, 4, 'APPROVED', 'Solid junior year performance. Ready for senior courses.', '2023-08-18'),
-(23, 8, 4, 'APPROVED', 'Excellent progress on senior requirements.', '2024-01-12'),
-(23, 9, 4, 'APPROVED', 'Internship approved. Great experience opportunity.', '2024-05-20'),
+-- Timeline: Fall 2025 is current semester (semester_id = 13)
+-- Amina's historical approvals starting from Fall 2022
 
--- Current semester awaiting advisor review
-(23, 10, 4, 'PENDING', NULL, NULL);
+INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_status, advisor_comments, approved_at) VALUES
+-- Amina's historical approvals from advisor (user_id = 4)
+(23, 4, 4, 'APPROVED', 'Great start to the CS program. Excellent course selection.', '2022-08-25'),   -- Fall 2022
+(23, 5, 4, 'APPROVED', 'Good progress on prerequisites.', '2023-01-10'),                              -- Spring 2023
+(23, 7, 4, 'APPROVED', 'Nice mix of core CS and math courses.', '2023-08-20'),                        -- Fall 2023
+(23, 8, 4, 'APPROVED', 'On track for junior year. Consider research opportunities.', '2024-01-08'),  -- Spring 2024
+(23, 10, 4, 'APPROVED', 'Solid junior year performance. Ready for senior courses.', '2024-08-18'),   -- Fall 2024
+(23, 11, 4, 'APPROVED', 'Excellent progress on senior requirements.', '2025-01-12'),                  -- Spring 2025
+(23, 12, 4, 'APPROVED', 'Internship approved. Great experience opportunity.', '2025-05-20'),         -- Summer 2025
+
+-- Current semester awaiting completion (no approval needed yet)
+(23, 13, 4, 'PENDING', NULL, NULL);  -- Fall 2025 (current)
+
+-- Youssef has no approvals yet (first semester, just started)
 
 -- ==========================================================
 -- END OF COMPREHENSIVE POPULATION
 -- ==========================================================
 
--- Summary Statistics (Amina-focused dataset):
--- Students: 1 student (Amina Berrada)
--- Advisors: 1 advisor (Fatima Alaoui)
--- Other domain data (programs, courses, groups) remain comprehensive
+-- Summary Statistics:
+-- Current Semester: Fall 2025 (semester_id = 13)
+-- Next Planning Semester: Spring 2026 (semester_id = 14)
+-- Students: 2 (Amina - Senior, Youssef - Freshman)
+-- Advisors: 1 (Fatima Alaoui)

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Loader2, MessageSquare, BookOpen, Sparkles } from "lucide-react";
+import { Send, Loader2, MessageSquare, BookOpen, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 interface CourseInfo {
@@ -40,7 +39,8 @@ export function CourseInfoPopup({ course, open, onClose }: CourseInfoPopupProps)
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Reset chat when course changes
   useEffect(() => {
@@ -50,12 +50,12 @@ export function CourseInfoPopup({ course, open, onClose }: CourseInfoPopupProps)
     }
   }, [course?.course_id]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Smooth auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, loading]);
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || !course || loading) return;
@@ -110,7 +110,7 @@ export function CourseInfoPopup({ course, open, onClose }: CourseInfoPopupProps)
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+        <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-primary/10 shrink-0">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -140,15 +140,18 @@ export function CourseInfoPopup({ course, open, onClose }: CourseInfoPopupProps)
         </DialogHeader>
 
         {/* AI Chat Section */}
-        <div className="flex-1 flex flex-col min-h-0 p-4">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="flex-1 flex flex-col min-h-0 p-4 overflow-hidden">
+          <div className="flex items-center gap-2 mb-3 shrink-0">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="font-semibold text-sm">Course Assistant</span>
             <Badge variant="outline" className="text-xs">Powered by AI</Badge>
           </div>
 
-          {/* Chat Messages */}
-          <ScrollArea className="flex-1 pr-4 -mr-4 min-h-[200px] max-h-[300px]" ref={scrollRef}>
+          {/* Chat Messages - Scrollable container */}
+          <div 
+            ref={chatContainerRef}
+            className="flex-1 overflow-y-auto min-h-[200px] max-h-[350px] pr-2 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40"
+          >
             {messages.length === 0 ? (
               <div className="text-center py-6">
                 <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
@@ -181,7 +184,7 @@ export function CourseInfoPopup({ course, open, onClose }: CourseInfoPopupProps)
                   >
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                        "max-w-[80%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
                         msg.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted"
@@ -198,12 +201,14 @@ export function CourseInfoPopup({ course, open, onClose }: CourseInfoPopupProps)
                     </div>
                   </div>
                 )}
+                {/* Invisible element to scroll to */}
+                <div ref={messagesEndRef} />
               </div>
             )}
-          </ScrollArea>
+          </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="flex gap-2 mt-4 pt-4 border-t">
+          <form onSubmit={handleSubmit} className="flex gap-2 mt-4 pt-4 border-t shrink-0">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}

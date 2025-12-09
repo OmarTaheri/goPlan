@@ -36,8 +36,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ===== Begin population/01_semesters.sql =====
 -- 1. SEMESTERS (Extended for 4-year planning)
+-- Current date: December 2025, so Fall 2025 is current semester
 -- ==========================================================
 INSERT INTO semesters (semester_id, name, term, year, start_date, end_date, is_active) VALUES
+-- Historical semesters
 (1, 'Fall 2021', 'FALL', 2021, '2021-09-01', '2021-12-15', FALSE),
 (2, 'Spring 2022', 'SPRING', 2022, '2022-01-15', '2022-05-15', FALSE),
 (3, 'Summer 2022', 'SUMMER', 2022, '2022-06-01', '2022-08-15', FALSE),
@@ -47,11 +49,22 @@ INSERT INTO semesters (semester_id, name, term, year, start_date, end_date, is_a
 (7, 'Fall 2023', 'FALL', 2023, '2023-09-01', '2023-12-15', FALSE),
 (8, 'Spring 2024', 'SPRING', 2024, '2024-01-15', '2024-05-15', FALSE),
 (9, 'Summer 2024', 'SUMMER', 2024, '2024-06-01', '2024-08-15', FALSE),
-(10, 'Fall 2024', 'FALL', 2024, '2024-09-01', '2024-12-15', TRUE), -- Current
+(10, 'Fall 2024', 'FALL', 2024, '2024-09-01', '2024-12-15', FALSE),
 (11, 'Spring 2025', 'SPRING', 2025, '2025-01-15', '2025-05-15', FALSE),
 (12, 'Summer 2025', 'SUMMER', 2025, '2025-06-01', '2025-08-15', FALSE),
-(13, 'Fall 2025', 'FALL', 2025, '2025-09-01', '2025-12-15', FALSE),
-(14, 'Spring 2026', 'SPRING', 2026, '2026-01-15', '2026-05-15', FALSE);
+-- Current semester
+(13, 'Fall 2025', 'FALL', 2025, '2025-09-01', '2025-12-15', TRUE),
+-- Future semesters (for planning)
+(14, 'Spring 2026', 'SPRING', 2026, '2026-01-15', '2026-05-15', FALSE),
+(15, 'Summer 2026', 'SUMMER', 2026, '2026-06-01', '2026-08-15', FALSE),
+(16, 'Fall 2026', 'FALL', 2026, '2026-09-01', '2026-12-15', FALSE),
+(17, 'Spring 2027', 'SPRING', 2027, '2027-01-15', '2027-05-15', FALSE),
+(18, 'Summer 2027', 'SUMMER', 2027, '2027-06-01', '2027-08-15', FALSE),
+(19, 'Fall 2027', 'FALL', 2027, '2027-09-01', '2027-12-15', FALSE),
+(20, 'Spring 2028', 'SPRING', 2028, '2028-01-15', '2028-05-15', FALSE),
+(21, 'Summer 2028', 'SUMMER', 2028, '2028-06-01', '2028-08-15', FALSE),
+(22, 'Fall 2028', 'FALL', 2028, '2028-09-01', '2028-12-15', FALSE),
+(23, 'Spring 2029', 'SPRING', 2029, '2029-01-15', '2029-05-15', FALSE);
 
 -- ==========================================================
 -- ===== End population/01_semesters.sql =====
@@ -431,6 +444,7 @@ INSERT INTO courses (course_id, course_code, title, credits, description, is_act
 (674, 'LIT 3375', 'Moroccan Literature: Survey(s)', 3, 'Moroccan lit survey', TRUE);
 
 -- ==========================================================
+-- ===== End population/04_courses.sql =====
 
 -- ===== Begin population/05_course_dependencies.sql =====
 -- 5. COURSE DEPENDENCIES (Prerequisites & Corequisites)
@@ -602,6 +616,8 @@ INSERT INTO course_dependencies (course_id, dependency_course_id, dependency_typ
 
 -- ==========================================================
 -- ===== End population/05_course_dependencies.sql =====
+
+-- ===== Begin population/06_program_requirement_groups.sql =====
 -- 6. PROGRAM REQUIREMENT GROUPS
 -- ==========================================================
 
@@ -1429,11 +1445,12 @@ INSERT INTO recommended_sequence (program_id, requirement_group_id, semester_num
 -- ===== Begin population/09_student_profiles_and_programs.sql =====
 -- 9. STUDENT PROFILES & PROGRAMS (New Split Structure)
 -- ==========================================================
+-- Timeline: Fall 2025 is current semester
 
 -- 1. Create Profiles (advisor and enrollment info only)
 INSERT INTO student_profiles (user_id, advisor_id, enrollment_year) VALUES
-(23, 4, 2021), -- Amina (Senior)
-(24, 4, 2024); -- Youssef (Freshman, started Fall 2024)
+(23, 4, 2022), -- Amina (Senior - enrolled Fall 2022, graduating Spring 2026)
+(24, 4, 2025); -- Youssef (Freshman - enrolled Fall 2025)
 
 -- 2. Assign Programs (Majors, Minors, Concentrations)
 INSERT INTO student_programs (student_id, program_id, type) VALUES
@@ -1446,73 +1463,89 @@ INSERT INTO student_programs (student_id, program_id, type) VALUES
 -- ===== End population/09_student_profiles_and_programs.sql =====
 
 -- ===== Begin population/10_student_transcripts.sql =====
--- 10. STUDENT TRANSCRIPTS (Amina only)
+-- 10. STUDENT TRANSCRIPTS
 -- ==========================================================
+-- Timeline: Fall 2025 is current semester (semester_id = 13)
+-- Amina: Senior, enrolled Fall 2022 (semester_id = 4)
+-- Youssef: Freshman, enrolled Fall 2025 (semester_id = 13)
 
 INSERT INTO student_transcript (student_id, course_id, semester_id, grade, status, credits_earned) VALUES
--- Year 1 Fall
-(23, 1, 1, 'A', 'COMPLETED', 1),   -- FYE 1101
-(23, 3, 1, 'A', 'COMPLETED', 0),   -- FAS 0210
-(23, 50, 1, 'A-', 'COMPLETED', 3), -- ENG 1301
-(23, 92, 1, 'A', 'COMPLETED', 3),  -- MTH 1303 Calculus I
-(23, 93, 1, 'A-', 'COMPLETED', 3), -- MTH 1304 Discrete Math
-(23, 41, 1, 'A', 'COMPLETED', 4),  -- CSC 1401
-(23, 10, 1, 'A-', 'COMPLETED', 2), -- Arabic
--- Year 1 Spring
-(23, 2, 2, 'A', 'COMPLETED', 1),   -- FYE 1102
-(23, 4, 2, 'A-', 'COMPLETED', 2),  -- FAS 1220
-(23, 30, 2, 'A', 'COMPLETED', 3),  -- COM 1301
-(23, 96, 2, 'A', 'COMPLETED', 3),  -- MTH 2301 Calculus II
-(23, 116, 2, 'A-', 'COMPLETED', 4),-- PHY 1401
-(23, 400, 2, 'A', 'COMPLETED', 3), -- CSC 2302 Data Structures
--- Year 2 Fall
-(23, 53, 4, 'A-', 'COMPLETED', 3), -- ENG 2303
-(23, 99, 4, 'A', 'COMPLETED', 3),  -- MTH 2320 Linear Algebra
-(23, 117, 4, 'A-', 'COMPLETED', 4),-- PHY 1402
-(23, 404, 4, 'A', 'COMPLETED', 3), -- CSC 2306 OOP
-(23, 403, 4, 'A-', 'COMPLETED', 3),-- CSC 2305 Computer Arch
--- Year 2 Spring
-(23, 100, 5, 'A', 'COMPLETED', 3), -- MTH 3301 Prob/Stats
-(23, 111, 5, 'A-', 'COMPLETED', 4),-- BIO 1401
-(23, 405, 5, 'A', 'COMPLETED', 3), -- CSC 3315 Languages
-(23, 406, 5, 'A-', 'COMPLETED', 3),-- CSC 3323 Algorithms
-(23, 60, 5, 'A', 'COMPLETED', 3),  -- History
--- Year 3 Fall
-(23, 407, 7, 'A-', 'COMPLETED', 3),-- CSC 3324 Software Engineering
-(23, 408, 7, 'A', 'COMPLETED', 3), -- CSC 3326 Databases
-(23, 409, 7, 'A-', 'COMPLETED', 3),-- CSC 3351 Operating Systems
-(23, 20, 7, 'A', 'COMPLETED', 2),  -- FRN 3210
-(23, 70, 7, 'A-', 'COMPLETED', 3), -- Humanities
--- Year 3 Spring
-(23, 410, 8, 'A', 'COMPLETED', 3), -- CSC 3371 Networks
-(23, 411, 8, 'A-', 'COMPLETED', 3),-- CSC 3374 Distributed Prog
-(23, 412, 8, 'A', 'COMPLETED', 3), -- CSC 4301 AI
-(23, 420, 8, 'A-', 'COMPLETED', 3),-- EGR 2302 Eng Economics
-(23, 80, 8, 'A', 'COMPLETED', 3),  -- Arts
--- Year 3 Summer (Internship)
-(23, 423, 9, 'A', 'COMPLETED', 3), -- EGR 4300 Internship
--- Math Minor Courses
-(23, 97, 5, 'A', 'COMPLETED', 3),  -- MTH 2303 Lin Alg & Matrix
-(23, 98, 7, 'A-', 'COMPLETED', 3), -- MTH 2304 Diff Eq
-(23, 101, 8, 'A', 'COMPLETED', 3), -- MTH 3302 Complex Variables
--- Year 4 Fall (Current Semester)
-(23, 413, 10, 'IP', 'IN_PROGRESS', 0), -- CSC 4307 Agile/DevOps
-(23, 414, 10, 'IP', 'IN_PROGRESS', 0), -- CSC 4308 Cybersecurity
-(23, 424, 10, 'IP', 'IN_PROGRESS', 0), -- EGR 4402 Capstone
-(23, 130, 10, 'IP', 'IN_PROGRESS', 0), -- Civic Engagement
-(23, 120, 10, 'IP', 'IN_PROGRESS', 0), -- Social Science
+-- ==========================================================
+-- AMINA (CS Senior - enrolled Fall 2022, graduating Spring 2026)
+-- ==========================================================
+
+-- Year 1 Fall (Fall 2022 - semester_id = 4)
+(23, 1, 4, 'A', 'COMPLETED', 1),   -- FYE 1101
+(23, 3, 4, 'A', 'COMPLETED', 0),   -- FAS 0210
+(23, 50, 4, 'A-', 'COMPLETED', 3), -- ENG 1301
+(23, 92, 4, 'A', 'COMPLETED', 3),  -- MTH 1303 Calculus I
+(23, 93, 4, 'A-', 'COMPLETED', 3), -- MTH 1304 Discrete Math
+(23, 41, 4, 'A', 'COMPLETED', 4),  -- CSC 1401
+(23, 10, 4, 'A-', 'COMPLETED', 2), -- Arabic
+
+-- Year 1 Spring (Spring 2023 - semester_id = 5)
+(23, 2, 5, 'A', 'COMPLETED', 1),   -- FYE 1102
+(23, 4, 5, 'A-', 'COMPLETED', 2),  -- FAS 1220
+(23, 30, 5, 'A', 'COMPLETED', 3),  -- COM 1301
+(23, 96, 5, 'A', 'COMPLETED', 3),  -- MTH 2301 Calculus II
+(23, 116, 5, 'A-', 'COMPLETED', 4),-- PHY 1401
+(23, 400, 5, 'A', 'COMPLETED', 3), -- CSC 2302 Data Structures
+
+-- Year 2 Fall (Fall 2023 - semester_id = 7)
+(23, 53, 7, 'A-', 'COMPLETED', 3), -- ENG 2303
+(23, 99, 7, 'A', 'COMPLETED', 3),  -- MTH 2320 Linear Algebra
+(23, 117, 7, 'A-', 'COMPLETED', 4),-- PHY 1402
+(23, 404, 7, 'A', 'COMPLETED', 3), -- CSC 2306 OOP
+(23, 403, 7, 'A-', 'COMPLETED', 3),-- CSC 2305 Computer Arch
+
+-- Year 2 Spring (Spring 2024 - semester_id = 8)
+(23, 100, 8, 'A', 'COMPLETED', 3), -- MTH 3301 Prob/Stats
+(23, 111, 8, 'A-', 'COMPLETED', 4),-- BIO 1401
+(23, 405, 8, 'A', 'COMPLETED', 3), -- CSC 3315 Languages
+(23, 406, 8, 'A-', 'COMPLETED', 3),-- CSC 3323 Algorithms
+(23, 60, 8, 'A', 'COMPLETED', 3),  -- History
+
+-- Year 3 Fall (Fall 2024 - semester_id = 10)
+(23, 407, 10, 'A-', 'COMPLETED', 3),-- CSC 3324 Software Engineering
+(23, 408, 10, 'A', 'COMPLETED', 3), -- CSC 3326 Databases
+(23, 409, 10, 'A-', 'COMPLETED', 3),-- CSC 3351 Operating Systems
+(23, 20, 10, 'A', 'COMPLETED', 2),  -- FRN 3210
+(23, 70, 10, 'A-', 'COMPLETED', 3), -- Humanities
+
+-- Year 3 Spring (Spring 2025 - semester_id = 11)
+(23, 410, 11, 'A', 'COMPLETED', 3), -- CSC 3371 Networks
+(23, 411, 11, 'A-', 'COMPLETED', 3),-- CSC 3374 Distributed Prog
+(23, 412, 11, 'A', 'COMPLETED', 3), -- CSC 4301 AI
+(23, 420, 11, 'A-', 'COMPLETED', 3),-- EGR 2302 Eng Economics
+(23, 80, 11, 'A', 'COMPLETED', 3),  -- Arts
+
+-- Year 3 Summer (Summer 2025 - semester_id = 12, Internship)
+(23, 423, 12, 'A', 'COMPLETED', 3), -- EGR 4300 Internship
+
+-- Math Minor Courses (distributed across semesters)
+(23, 97, 8, 'A', 'COMPLETED', 3),  -- MTH 2303 Lin Alg & Matrix
+(23, 98, 10, 'A-', 'COMPLETED', 3), -- MTH 2304 Diff Eq
+(23, 101, 11, 'A', 'COMPLETED', 3), -- MTH 3302 Complex Variables
+
+-- Year 4 Fall (Fall 2025 - semester_id = 13) - CURRENT SEMESTER
+(23, 413, 13, 'IP', 'IN_PROGRESS', 0), -- CSC 4307 Agile/DevOps
+(23, 414, 13, 'IP', 'IN_PROGRESS', 0), -- CSC 4308 Cybersecurity
+(23, 424, 13, 'IP', 'IN_PROGRESS', 0), -- EGR 4402 Capstone
+(23, 130, 13, 'IP', 'IN_PROGRESS', 0), -- Civic Engagement
+(23, 120, 13, 'IP', 'IN_PROGRESS', 0), -- Social Science
 
 -- ==========================================================
--- Youssef (CS Freshman - Only Fall 2024, First Semester)
+-- YOUSSEF (CS Freshman - enrolled Fall 2025, first semester)
 -- ==========================================================
--- Fall 2024 (Current semester - First semester for Youssef)
-(24, 1, 10, 'A', 'COMPLETED', 1),   -- FYE 1101 First Year Experience
-(24, 3, 10, 'A-', 'COMPLETED', 0),  -- FAS 0210 Strategic Academic Skills
-(24, 50, 10, 'B+', 'COMPLETED', 3), -- ENG 1301 English Composition
-(24, 92, 10, 'A', 'COMPLETED', 3),  -- MTH 1303 Calculus I
-(24, 93, 10, 'A-', 'COMPLETED', 3), -- MTH 1304 Discrete Math
-(24, 41, 10, 'A', 'COMPLETED', 4),  -- CSC 1401 Computer Programming
-(24, 10, 10, 'B', 'COMPLETED', 2);  -- ARB 1241 Arabic
+
+-- Year 1 Fall (Fall 2025 - semester_id = 13) - CURRENT SEMESTER
+(24, 1, 13, 'IP', 'IN_PROGRESS', 0),   -- FYE 1101 First Year Experience
+(24, 3, 13, 'IP', 'IN_PROGRESS', 0),   -- FAS 0210 Strategic Academic Skills
+(24, 50, 13, 'IP', 'IN_PROGRESS', 0),  -- ENG 1301 English Composition
+(24, 92, 13, 'IP', 'IN_PROGRESS', 0),  -- MTH 1303 Calculus I
+(24, 93, 13, 'IP', 'IN_PROGRESS', 0),  -- MTH 1304 Discrete Math
+(24, 41, 13, 'IP', 'IN_PROGRESS', 0),  -- CSC 1401 Computer Programming
+(24, 10, 13, 'IP', 'IN_PROGRESS', 0);  -- ARB 1241 Arabic
 
 -- ==========================================================
 -- ===== End population/10_student_transcripts.sql =====
@@ -1543,41 +1576,58 @@ INSERT INTO student_plan_drafts (draft_id, student_id, name, is_default) VALUES
 -- ===== End population/12_student_plans.sql =====
 
 -- ===== Begin population/13_semester_approvals.sql =====
--- 13. SEMESTER APPROVALS (Amina only)
+-- 13. SEMESTER APPROVALS
 -- ==========================================================
-INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_status, advisor_comments, approved_at) VALUES
--- Historical approvals from Amina's advisor (user_id = 4)
-(23, 1, 4, 'APPROVED', 'Great start to the CS program. Excellent course selection.', '2021-08-25'),
-(23, 2, 4, 'APPROVED', 'Good progress on prerequisites.', '2022-01-10'),
-(23, 4, 4, 'APPROVED', 'Nice mix of core CS and math courses.', '2022-08-20'),
-(23, 5, 4, 'APPROVED', 'On track for junior year. Consider research opportunities.', '2023-01-08'),
-(23, 7, 4, 'APPROVED', 'Solid junior year performance. Ready for senior courses.', '2023-08-18'),
-(23, 8, 4, 'APPROVED', 'Excellent progress on senior requirements.', '2024-01-12'),
-(23, 9, 4, 'APPROVED', 'Internship approved. Great experience opportunity.', '2024-05-20'),
+-- Timeline: Fall 2025 is current semester (semester_id = 13)
+-- Amina's historical approvals starting from Fall 2022
 
--- Current semester awaiting advisor review
-(23, 10, 4, 'PENDING', NULL, NULL);
+INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_status, advisor_comments, approved_at) VALUES
+-- Amina's historical approvals from advisor (user_id = 4)
+(23, 4, 4, 'APPROVED', 'Great start to the CS program. Excellent course selection.', '2022-08-25'),   -- Fall 2022
+(23, 5, 4, 'APPROVED', 'Good progress on prerequisites.', '2023-01-10'),                              -- Spring 2023
+(23, 7, 4, 'APPROVED', 'Nice mix of core CS and math courses.', '2023-08-20'),                        -- Fall 2023
+(23, 8, 4, 'APPROVED', 'On track for junior year. Consider research opportunities.', '2024-01-08'),  -- Spring 2024
+(23, 10, 4, 'APPROVED', 'Solid junior year performance. Ready for senior courses.', '2024-08-18'),   -- Fall 2024
+(23, 11, 4, 'APPROVED', 'Excellent progress on senior requirements.', '2025-01-12'),                  -- Spring 2025
+(23, 12, 4, 'APPROVED', 'Internship approved. Great experience opportunity.', '2025-05-20'),         -- Summer 2025
+
+-- Current semester awaiting completion (no approval needed yet)
+(23, 13, 4, 'PENDING', NULL, NULL);  -- Fall 2025 (current)
+
+-- Youssef has no approvals yet (first semester, just started)
 
 -- ==========================================================
 -- END OF COMPREHENSIVE POPULATION
 -- ==========================================================
 
--- Summary Statistics (Amina-focused dataset):
--- Students: 1 student (Amina Berrada)
--- Advisors: 1 advisor (Fatima Alaoui)
--- Other domain data (programs, courses, groups) remain comprehensive
+-- Summary Statistics:
+-- Current Semester: Fall 2025 (semester_id = 13)
+-- Next Planning Semester: Spring 2026 (semester_id = 14)
+-- Students: 2 (Amina - Senior, Youssef - Freshman)
+-- Advisors: 1 (Fatima Alaoui)
 -- ===== End population/13_semester_approvals.sql =====
 
 -- ===== Begin population/14_student_plan_semesters.sql =====
 -- 14. STUDENT PLAN SEMESTERS
+-- ==========================================================
+-- Timeline: Fall 2025 is current, Spring 2026 is next plannable semester
+-- These are the planning semesters that students can add courses to
 
-
--- The user added only the last plan semster in the planner
 DELETE FROM student_plan_semesters WHERE draft_id = 1;
 DELETE FROM student_plan_semesters WHERE draft_id = 2;
 
 INSERT INTO student_plan_semesters (draft_id, semester_number, term, year, is_locked) VALUES
-(1, 1, 'SPRING', 2025, FALSE),
--- Youssef's planning semesters (starting Spring 2025)
-(2, 1, 'SPRING', 2025, FALSE);
+-- Amina's planning semester (only needs Spring 2026 to graduate)
+(1, 1, 'SPRING', 2026, FALSE),
+
+-- Youssef's planning semesters (7 more semesters to complete degree)
+(2, 1, 'SPRING', 2026, FALSE),
+(2, 2, 'FALL', 2026, FALSE),
+(2, 3, 'SPRING', 2027, FALSE),
+(2, 4, 'FALL', 2027, FALSE),
+(2, 5, 'SPRING', 2028, FALSE),
+(2, 6, 'FALL', 2028, FALSE),
+(2, 7, 'SPRING', 2029, FALSE);
+
+-- ==========================================================
 -- ===== End population/14_student_plan_semesters.sql =====
