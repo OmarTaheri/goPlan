@@ -147,7 +147,6 @@ export default defineConfig([
   },
   globalIgnores([
     ".github/",
-    ".husky/",
     "node_modules/",
     ".next/**",
     "out/**",
