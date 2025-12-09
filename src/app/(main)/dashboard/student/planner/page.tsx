@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { CourseInfoPopup } from "./_components/CourseInfoPopup";
 
 interface Course {
   plan_id: number;
@@ -159,6 +160,16 @@ export default function PlannerPage() {
   const [autoFillLoading, setAutoFillLoading] = useState(false);
   const [showAutoFillPreview, setShowAutoFillPreview] = useState(false);
   const [autoFillData, setAutoFillData] = useState<AutoFillData | null>(null);
+  
+  // Course info popup state
+  const [selectedCourseForPopup, setSelectedCourseForPopup] = useState<{
+    course_id: number;
+    course_code: string;
+    title: string;
+    credits: number;
+    grade?: string | null;
+  } | null>(null);
+  const [showCoursePopup, setShowCoursePopup] = useState(false);
   
   // Drag state
   interface DragItem {
@@ -679,8 +690,18 @@ export default function PlannerPage() {
                           className={cn(
                             "group p-2 rounded-md border bg-background relative select-none",
                             !isLocked && "cursor-grab active:cursor-grabbing hover:border-primary/50",
-                            isLocked && "opacity-80"
+                            isLocked && "opacity-80 cursor-pointer hover:bg-accent/50"
                           )}
+                          onClick={() => {
+                            setSelectedCourseForPopup({
+                              course_id: course.course_id,
+                              course_code: course.course_code,
+                              title: course.title,
+                              credits: course.credits,
+                              grade: course.grade,
+                            });
+                            setShowCoursePopup(true);
+                          }}
                         >
                           <div className="flex items-center justify-between">
                             <div className="min-w-0 flex-1">
@@ -1187,6 +1208,16 @@ export default function PlannerPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Course Info Popup with AI Helper */}
+      <CourseInfoPopup
+        course={selectedCourseForPopup}
+        open={showCoursePopup}
+        onClose={() => {
+          setShowCoursePopup(false);
+          setSelectedCourseForPopup(null);
+        }}
+      />
     </div>
   );
 }
