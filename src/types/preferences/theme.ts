@@ -33,6 +33,14 @@ export const THEME_PRESET_OPTIONS = [
     },
   },
   {
+    label: "GoPlan Staff",
+    value: "goplan-staff",
+    primary: {
+      light: "oklch(0.35 0.08 155)",
+      dark: "oklch(0.50 0.12 155)",
+    },
+  },
+  {
     label: "Soft Pop",
     value: "soft-pop",
     primary: {
