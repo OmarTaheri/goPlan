@@ -1,0 +1,364 @@
+{
+  "degree_plan": {
+    "title": "B.S. in Computer Science (BSCSC)",
+    "catalog_year": "2019-2021",
+    "total_credit_hours": 136,
+    "last_updated": "7/11/2020",
+    "notes": [
+      "Arranging for Summer Session(s) is recommended to readjust and mitigate the course load during regular semesters"
+    ],
+    "semesters": [
+      {
+        "semester_number": 1,
+        "semester_name": "Freshman",
+        "total_sch": 16,
+        "courses": [
+          {
+            "area": "Area 1: a) Mathematics Requirements",
+            "course_code": "MTH 1303",
+            "course_title": "Calculus I: Differential and Integral Calculus",
+            "sch": 3
+          },
+          {
+            "area": "Area 1: a) Mathematics Requirements",
+            "course_code": "MTH 1304",
+            "course_title": "Discrete Mathematics",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 1401",
+            "course_title": "Computer Programming",
+            "sch": 4
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "Arabic Elective",
+            "course_title": "Arabic Language",
+            "options": "ARA 1201, ARA 1202, ARA 1203, ARA 3299, ARB 1201, ARB 1202, ARB 1203, ARB 1241",
+            "sch": 2
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "ENG 1301",
+            "course_title": "English Composition I",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "FAS 0210",
+            "course_title": "Foundations for Academic Success: Strategic Academic Skills",
+            "sch": 0
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "FYE 1101",
+            "course_title": "First Year Experience",
+            "sch": 1
+          }
+        ]
+      },
+      {
+        "semester_number": 2,
+        "semester_name": "Freshman",
+        "total_sch": 16,
+        "courses": [
+          {
+            "area": "Area 1: a) Mathematics Requirements",
+            "course_code": "MTH 2301",
+            "course_title": "Calculus II: Multivariable Calculus",
+            "sch": 3
+          },
+          {
+            "area": "Area 1: b) Sciences and Engineering Requirements",
+            "course_code": "PHY 1401",
+            "course_title": "Physics I",
+            "sch": 4
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 2302",
+            "course_title": "Data Structures",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "COM 1301",
+            "course_title": "Public Speaking",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "FAS 1220",
+            "course_title": "Foundations for Academic Success: Introduction to Critical Thinking",
+            "sch": 2
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "FYE 1102",
+            "course_title": "First Year Experience",
+            "sch": 1
+          }
+        ]
+      },
+      {
+        "semester_number": 3,
+        "semester_name": "Sophomore",
+        "total_sch": 16,
+        "courses": [
+          {
+            "area": "Area 1: a) Mathematics Requirements",
+            "course_code": "MTH 2320",
+            "course_title": "Linear Algebra",
+            "sch": 3
+          },
+          {
+            "area": "Area 1: b) Sciences and Engineering Requirements",
+            "course_code": "PHY 1402",
+            "course_title": "Physics II",
+            "sch": 4
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 2306",
+            "course_title": "Object Oriented Programming",
+            "sch": 3
+          },
+          {
+            "area": "Area 3: Minor",
+            "course_code": "Minor Course 1",
+            "course_title": "Minor Elective 1",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "ENG 2303",
+            "course_title": "Technical Writing",
+            "sch": 3
+          }
+        ]
+      },
+      {
+        "semester_number": 4,
+        "semester_name": "Sophomore",
+        "total_sch": 16,
+        "courses": [
+          {
+            "area": "Area 1: a) Mathematics Requirements",
+            "course_code": "MTH 3301",
+            "course_title": "Probability and Statistics for Engineers",
+            "sch": 3
+          },
+          {
+            "area": "Area 1: b) Sciences and Engineering Requirements",
+            "course_code": "Basic Sciences Elective",
+            "course_title": "Basic Sciences Elective",
+            "options": "BIO 1401, BIO 1402, or CHE 1401",
+            "sch": 4
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 2305",
+            "course_title": "Computer Organization and Architecture",
+            "sch": 3
+          },
+          {
+            "area": "Area 3: Minor",
+            "course_code": "Minor Course 2",
+            "course_title": "Minor Elective 2",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "Humanities Elective",
+            "course_title": "Humanities",
+            "options": "HUM 2305, HUM 2306, HUM 2307, LIT 2301, PHI 2301, PHI 2302",
+            "sch": 3
+          }
+        ]
+      },
+      {
+        "semester_number": 5,
+        "semester_name": "Junior",
+        "total_sch": 17,
+        "courses": [
+          {
+            "area": "Area 1: b) Sciences and Engineering Requirements",
+            "course_code": "EGR 2302",
+            "course_title": "Engineering Economics",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3315",
+            "course_title": "Languages and Compilers",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3323",
+            "course_title": "Analysis of Algorithms",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3324",
+            "course_title": "Software Engineering",
+            "sch": 3
+          },
+          {
+            "area": "Area 3: Minor",
+            "course_code": "Minor Course 3",
+            "course_title": "Minor Elective 3",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "FRN 3210",
+            "course_title": "French",
+            "sch": 2
+          }
+        ]
+      },
+      {
+        "semester_number": 6,
+        "semester_name": "Junior",
+        "total_sch": 18,
+        "courses": [
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3326",
+            "course_title": "Database Systems",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3351",
+            "course_title": "Operating Systems",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3371",
+            "course_title": "Computer Communications and Networks",
+            "sch": 3
+          },
+          {
+            "area": "Area 3: Minor",
+            "course_code": "Minor Course 4",
+            "course_title": "Minor Elective 4",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "Art Elective",
+            "course_title": "Art Appreciation & Creation",
+            "options": "ART 1301, ART 1302, ART 1303, ART 1304, ART 1305, ART 3399, ENG 2320, HUM 2301, COM 2327, LIT 3370",
+            "sch": 3
+          },
+          {
+            "area": "Free Electives",
+            "course_code": "Free Elective I",
+            "course_title": "Free Elective I",
+            "sch": 3
+          }
+        ]
+      },
+      {
+        "semester_number": 7,
+        "semester_name": "Senior",
+        "total_sch": 17,
+        "courses": [
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "Elective",
+            "course_title": "Computing and Engineering Elective",
+            "sch": 2
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 3374",
+            "course_title": "Advanced and Distributed Programming Paradigms",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 4301",
+            "course_title": "Introduction to Artificial Intelligence",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 4307",
+            "course_title": "Agile Software Engineering and DevOps",
+            "sch": 3
+          },
+          {
+            "area": "Area 3: Minor",
+            "course_code": "Minor Course 5",
+            "course_title": "Minor Elective 5",
+            "sch": 3
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "History/Pol Sci Elective",
+            "course_title": "History or Political Science",
+            "options": "HIS 1301, HIS 2301, HUM 1310, HUM 2302, PSC 2301",
+            "sch": 3
+          }
+        ]
+      },
+      {
+        "semester_number": 8,
+        "semester_name": "Senior",
+        "total_sch": 20,
+        "courses": [
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "Advanced Elective",
+            "course_title": "Advanced Computing Elective",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "CSC 4308",
+            "course_title": "Cyber Security",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "EGR 4300",
+            "course_title": "Internship",
+            "sch": 3
+          },
+          {
+            "area": "Area 2: Computing Core & Major Requirements",
+            "course_code": "EGR 4402",
+            "course_title": "Capstone Design",
+            "sch": 4
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "Civic Engagement",
+            "course_title": "Civic Engagement",
+            "options": "SL or SLP 1101",
+            "sch": 1
+          },
+          {
+            "area": "Area 4: General Education (GenEd) Program",
+            "course_code": "Social Sciences Elective",
+            "course_title": "Social Sciences",
+            "options": "ECO 1300, GEO 1301, PSY 1301, SOC 1301, SSC 1310",
+            "sch": 3
+          },
+          {
+            "area": "Free Electives",
+            "course_code": "Free Elective II",
+            "course_title": "Free Elective II",
+            "sch": 3
+          }
+        ]
+      }
+    ]
+  }
+}

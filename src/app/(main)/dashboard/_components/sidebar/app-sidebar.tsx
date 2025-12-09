@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { Settings, CircleHelp, Search, Database, ClipboardList, File, Command } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 import {
   Sidebar,
@@ -14,58 +15,65 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
-import { rootUser } from "@/data/users";
-import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
+import { getSidebarItemsForRole, sidebarItems } from "@/navigation/sidebar/sidebar-items";
 
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
-const data = {
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: CircleHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: Search,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: Database,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: ClipboardList,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: File,
-    },
-  ],
+interface CurrentUser {
+  user_id: number;
+  username: string;
+  email: string;
+  role: string;
+  first_name?: string;
+  last_name?: string;
+}
+
+const roleLabels: Record<string, string> = {
+  ADMIN: "Administrator",
+  STUDENT: "Student",
+  ADVISOR: "Advisor",
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
+  }, []);
+
+  const navItems = user ? getSidebarItemsForRole(user.role) : sidebarItems;
+
+  const userName = user
+    ? `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.username
+    : "Guest";
+
+  const userEmail = user?.email || "";
+  const userRole = user?.role ? roleLabels[user.role] || user.role : "";
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <Link prefetch={false} href="/dashboard/default">
-                <Command />
+              <Link prefetch={false} href="/">
+                <GraduationCap />
                 <span className="text-base font-semibold">{APP_CONFIG.name}</span>
               </Link>
             </SidebarMenuButton>
@@ -73,12 +81,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} />
-        {/* <NavDocuments items={data.documents} /> */}
-        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+        <NavMain items={navItems} userRole={user?.role || null} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={rootUser} />
+        <NavUser
+          user={{
+            name: userName,
+            email: userEmail,
+            role: userRole,
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

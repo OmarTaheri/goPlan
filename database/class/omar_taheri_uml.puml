@@ -1,0 +1,261 @@
+@startuml
+' Omar Tasheri - GoPlan 
+hide circle
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+' ==========
+' Tables
+' ==========
+class users {
+  +user_id : INT <<PK>>
+  --
+  username : VARCHAR(50) <<UK>>
+  email : VARCHAR(100) <<UK>>
+  password_hash : VARCHAR(255)
+  first_name : VARCHAR(50) [0..1]
+  last_name : VARCHAR(50) [0..1]
+  role : UserRole
+  created_at : TIMESTAMP
+}
+
+class semesters {
+  +semester_id : INT <<PK>>
+  --
+  name : VARCHAR(50)
+  term : Term
+  year : INT
+  start_date : DATE
+  end_date : DATE
+  is_active : BOOLEAN
+  --
+  (term, year) : <<UK>>
+}
+
+class courses {
+  +course_id : INT <<PK>>
+  --
+  course_code : VARCHAR(10) <<UK>>
+  title : VARCHAR(100)
+  credits : INT
+  description : TEXT [0..1]
+  is_active : BOOLEAN
+}
+
+class course_dependencies {
+  +dependency_id : INT <<PK>>
+  --
+  course_id : INT <<FK courses.course_id>>
+  dependency_course_id : INT <<FK courses.course_id>>
+  dependency_type : DependencyType
+  logic_set_id : INT
+  required_status : RequiredStatus [0..1]
+  note : VARCHAR(255) [0..1]
+  --
+  (course_id, dependency_course_id, dependency_type) : <<UK>>
+}
+
+class programs {
+  +program_id : INT <<PK>>
+  --
+  name : VARCHAR(100)
+  code : VARCHAR(20) [0..1]
+  school : VARCHAR(10) [0..1]
+  type : ProgramType
+  total_credits_required : INT
+  catalog_year : VARCHAR(20) [0..1]
+  parent_program_id : INT [0..1] <<FK programs.program_id>>
+  minor_required : MinorRequired
+  concentrations_available : ConcentrationsAvailable
+  free_electives_credits : INT
+  prerequisite_note : TEXT [0..1]
+}
+
+class program_requirement_groups {
+  +group_id : INT <<PK>>
+  --
+  program_id : INT <<FK programs.program_id>>
+  name : VARCHAR(100)
+  credits_required : INT
+  min_courses_required : INT
+  parent_group_id : INT [0..1] <<FK program_requirement_groups.group_id>>
+}
+
+class requirement_group_courses {
+  +link_id : INT <<PK>>
+  --
+  group_id : INT <<FK program_requirement_groups.group_id>>
+  course_id : INT <<FK courses.course_id>>
+  is_mandatory : BOOLEAN
+  --
+  (group_id, course_id) : <<UK>>
+}
+
+class recommended_sequence {
+  +sequence_id : INT <<PK>>
+  --
+  program_id : INT <<FK programs.program_id>>
+  course_id : INT [0..1] <<FK courses.course_id>>
+  requirement_group_id : INT [0..1] <<FK program_requirement_groups.group_id>>
+  semester_number : INT
+  recommended_order : INT
+ }
+
+class student_profiles {
+  +profile_id : INT <<PK>>
+  --
+  user_id : INT <<FK users.user_id>>
+  advisor_id : INT [0..1] <<FK users.user_id>>
+  enrollment_year : INT [0..1]
+}
+
+class student_programs {
+  +student_program_id : INT <<PK>>
+  --
+  student_id : INT <<FK users.user_id>>
+  program_id : INT <<FK programs.program_id>>
+  type : ProgramType
+  is_primary : BOOLEAN
+  declared_at : TIMESTAMP
+  --
+  (student_id, program_id) : <<UK>>
+}
+
+class student_transcript {
+  +transcript_id : INT <<PK>>
+  --
+  student_id : INT <<FK users.user_id>>
+  course_id : INT <<FK courses.course_id>>
+  semester_id : INT <<FK semesters.semester_id>>
+  grade : VARCHAR(5) [0..1]
+  status : TranscriptStatus
+  credits_earned : INT
+  --
+  (student_id, course_id, semester_id) : <<UK>>
+}
+
+class student_plan_drafts {
+  +draft_id : INT <<PK>>
+  --
+  student_id : INT <<FK users.user_id>>
+  name : VARCHAR(100)
+  is_default : BOOLEAN
+  created_at : TIMESTAMP
+  updated_at : TIMESTAMP
+}
+
+class student_plan {
+  +plan_id : INT <<PK>>
+  --
+  student_id : INT <<FK users.user_id>>
+  draft_id : INT <<FK student_plan_drafts.draft_id>>
+  course_id : INT <<FK courses.course_id>>
+  semester_number : INT
+  semester_order : INT
+  status : PlanStatus
+  prereqs_met : BOOLEAN
+  --
+  (draft_id, course_id, semester_number) : <<UK>>
+}
+
+class student_plan_semesters {
+  +plan_semester_id : INT <<PK>>
+  --
+  draft_id : INT <<FK student_plan_drafts.draft_id>>
+  semester_number : INT
+  term : Term [0..1]
+  year : INT
+  is_locked : BOOLEAN
+  created_at : TIMESTAMP
+  --
+  (draft_id, semester_number) : <<UK>>
+}
+
+class semester_approvals {
+  +approval_id : INT <<PK>>
+  --
+  student_id : INT <<FK users.user_id>>
+  semester_id : INT <<FK semesters.semester_id>>
+  advisor_id : INT [0..1] <<FK users.user_id>>
+  approval_status : ApprovalStatus
+  advisor_comments : TEXT [0..1]
+  submitted_at : TIMESTAMP
+  approved_at : TIMESTAMP [0..1]
+  --
+  (student_id, semester_id) : <<UK>>
+}
+
+class refresh_tokens {
+  +token_id : INT <<PK>>
+  --
+  user_id : INT <<FK users.user_id>>
+  token_hash : VARCHAR(255) <<UK>>
+  expires_at : TIMESTAMP
+  created_at : TIMESTAMP
+  revoked : BOOLEAN
+  revoked_at : TIMESTAMP [0..1]
+  ip_address : VARCHAR(45) [0..1]
+  user_agent : TEXT [0..1]
+}
+
+class program_minor_rules {
+  +rule_id : INT <<PK>>
+  --
+  program_id : INT <<FK programs.program_id>>
+  minor_program_id : INT <<FK programs.program_id>>
+  rule_type : MinorRuleType
+  --
+  (program_id, minor_program_id) : <<UK>>
+}
+
+' ==================
+' Relationships
+' ==================
+
+' users
+users "1" -- "0..*" refresh_tokens : has
+users "1" -- "0..*" student_plan_drafts : owns
+users "1" -- "0..*" student_plan : places
+users "1" -- "0..*" student_programs : declares
+users "1" -- "0..*" student_transcript : earns
+users "1" -- "0..*" student_profiles : profile(user_id)
+users "1" -- "0..*" student_profiles : advisor(advisor_id)
+
+' semesters
+semesters "1" -- "0..*" student_transcript : contains
+semesters "1" -- "0..*" semester_approvals : approvals
+
+' courses
+courses "1" -- "0..*" student_transcript : taken
+courses "1" -- "0..*" student_plan : planned
+courses "1" -- "0..*" requirement_group_courses : in
+courses "1" -- "0..*" recommended_sequence : recommended(course)
+courses "1" -- "0..*" course_dependencies : course_id
+courses "1" -- "0..*" course_dependencies : dependency_course_id
+
+' programs
+programs "1" -- "0..*" program_requirement_groups : has
+programs "1" -- "0..*" recommended_sequence : has
+programs "1" -- "0..*" student_programs : chosen_by
+programs "0..1" -- "0..*" programs : parent_program
+
+' requirement groups
+program_requirement_groups "1" -- "0..*" requirement_group_courses : links
+program_requirement_groups "0..1" -- "0..*" program_requirement_groups : parent_group
+program_requirement_groups "1" -- "0..*" recommended_sequence : recommended(group)
+
+' plans
+student_plan_drafts "1" -- "0..*" student_plan : entries
+student_plan_drafts "1" -- "0..*" student_plan_semesters : semesters
+
+' approvals (advisor is a user too)
+users "1" -- "0..*" semester_approvals : student(student_id)
+users "1" -- "0..*" semester_approvals : advisor(advisor_id)
+
+' minor rules (program-to-program)
+programs "1" -- "0..*" program_minor_rules : major_side(program_id)
+programs "1" -- "0..*" program_minor_rules : minor_side(minor_program_id)
+
+@enduml
+

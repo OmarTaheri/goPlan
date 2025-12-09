@@ -1,6 +1,7 @@
 "use client";
 
-import { EllipsisVertical, CircleUser, CreditCard, MessageSquareDot, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { EllipsisVertical, CircleUser, LogOut } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,10 +22,26 @@ export function NavUser({
   readonly user: {
     readonly name: string;
     readonly email: string;
-    readonly avatar: string;
+    readonly avatar?: string;
+    readonly role?: string;
   };
 }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      // Clear local storage
+      localStorage.removeItem("access_token");
+      // Use window.location for full page reload to clear all state
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Still redirect even if API call fails
+      window.location.href = "/login";
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -41,7 +58,9 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+                <span className="text-muted-foreground truncate text-xs">
+                  {user.role || user.email}
+                </span>
               </div>
               <EllipsisVertical className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -70,17 +89,9 @@ export function NavUser({
                 <CircleUser />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <MessageSquareDot />
-                Notifications
-              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
               <LogOut />
               Log out
             </DropdownMenuItem>
@@ -90,3 +101,4 @@ export function NavUser({
     </SidebarMenu>
   );
 }
+
