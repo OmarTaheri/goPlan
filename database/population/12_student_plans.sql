@@ -1,4 +1,4 @@
--- 12. STUDENT PLANS (Amina only)
+-- 12. STUDENT PLANS
 -- ==========================================================
 
 -- NOTE: Fall 2024 courses are already in transcript as IN_PROGRESS

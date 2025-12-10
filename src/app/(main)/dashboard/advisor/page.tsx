@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Users, ClipboardCheck, AlertTriangle, Eye, Loader2 } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,9 +88,18 @@ export default function AdvisorDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome, {userName}</h1>
-        <p className="text-muted-foreground">Manage your student caseload and review plans</p>
+      <div className="flex items-center gap-4">
+        <Image
+          src="/nasser-assem.jpg"
+          alt="Advisor profile"
+          width={64}
+          height={64}
+          className="rounded-full object-cover"
+        />
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome, {userName}</h1>
+          <p className="text-muted-foreground">Manage your student caseload and review plans</p>
+        </div>
       </div>
 
       {error && (

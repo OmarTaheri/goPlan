@@ -1,8 +1,8 @@
--- 11. STUDENT PLAN DRAFTS (Amina only)
+-- 11. STUDENT PLAN DRAFTS
 -- ==========================================================
 
 INSERT INTO student_plan_drafts (draft_id, student_id, name, is_default) VALUES
-(1, 23, 'Default Plan', TRUE),   -- Amina
-(2, 24, 'Default Plan', TRUE);   -- Youssef
+(1, 23, 'Default Plan', TRUE),   -- Omar
+(2, 24, 'Default Plan', TRUE);   -- Ismail
 
 -- ==========================================================

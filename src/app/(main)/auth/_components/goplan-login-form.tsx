@@ -20,11 +20,10 @@ const FormSchema = z.object({
 
 const demoCredentials = [
   { role: "Admin", user: "admin", pass: "Password123!" },
-  { role: "Registrar", user: "registrar", pass: "Password123!" },
   { role: "Advisor (SSE)", user: "advisor_sse", pass: "Password123!" },
   // CS Students
-  { role: "CS Senior (Amina)", user: "cs_senior_amina", pass: "Password123!" },
-  { role: "CS Freshman (Youssef)", user: "cs_freshman_youssef", pass: "Password123!" },
+  { role: "CS Senior (Omar)", user: "cs_senior_omar", pass: "Password123!" },
+  { role: "CS Freshman (Ismail)", user: "cs_freshman_ismail", pass: "Password123!" },
 ];
 
 export function GoPlanLoginForm() {

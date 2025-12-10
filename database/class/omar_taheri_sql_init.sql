@@ -462,28 +462,6 @@ END$$
 
 -- 9.4 Validate advisor role assignment
 
-CREATE TRIGGER trg_before_student_profile_update
-BEFORE UPDATE ON student_profiles
-FOR EACH ROW
-BEGIN
-    DECLARE advisor_role VARCHAR(20);
-    
-    IF NEW.advisor_id IS NOT NULL THEN
-        IF NEW.advisor_id = NEW.user_id THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'Student cannot be their own advisor';
-        END IF;
-        
-        SELECT role INTO advisor_role 
-        FROM users WHERE user_id = NEW.advisor_id;
-        
-        IF advisor_role != 'ADVISOR' THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'Assigned user is not an advisor';
-        END IF;
-    END IF;
-END$$
-
 CREATE TRIGGER trg_before_student_profile_insert_advisor
 BEFORE INSERT ON student_profiles
 FOR EACH ROW

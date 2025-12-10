@@ -70,21 +70,20 @@ INSERT INTO semesters (semester_id, name, term, year, start_date, end_date, is_a
 -- ===== End population/01_semesters.sql =====
 
 -- ===== Begin population/02_users.sql =====
--- 2. USERS (Admins, single advisor, Amina)
+-- 2. USERS (Admin, advisor, students)
 -- ==========================================================
 -- All users have password: "Password123!" for testing
 -- Bcrypt hash with 10 rounds (OWASP recommended)
 INSERT INTO users (user_id, username, email, password_hash, first_name, last_name, role) VALUES
--- Administrators
+-- Administrator
 (1, 'admin', 'admin@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'System', 'Admin', 'ADMIN'),
-(2, 'registrar', 'registrar@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Academic', 'Registrar', 'ADMIN'),
 
--- Advisor (only the one linked to Amina)
-(4, 'advisor_sse', 'advisor.sse@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Fatima', 'Alaoui', 'ADVISOR'),
+-- Advisor
+(4, 'advisor_sse', 'advisor.sse@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Nasser', 'Assem', 'ADVISOR'),
 
 -- Students
-(23, 'cs_senior_amina', 'amina.cs@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Amina', 'Berrada', 'STUDENT'),
-(24, 'cs_freshman_youssef', 'youssef.cs@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Youssef', 'Bennani', 'STUDENT');
+(23, 'cs_senior_omar', 'omar.cs@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Omar', 'Taheri', 'STUDENT'),
+(24, 'cs_freshman_ismail', 'ismail.cs@aui.ma', '$2b$10$c.qM7eQpiGSiKwltwNqdjOKWCd9LpRW8.hwSBhZM3k3AcRHgEWQr.', 'Ismail', 'Tanji', 'STUDENT');
 
 -- ==========================================================
 -- ===== End population/02_users.sql =====
@@ -1449,14 +1448,14 @@ INSERT INTO recommended_sequence (program_id, requirement_group_id, semester_num
 
 -- 1. Create Profiles (advisor and enrollment info only)
 INSERT INTO student_profiles (user_id, advisor_id, enrollment_year) VALUES
-(23, 4, 2022), -- Amina (Senior - enrolled Fall 2022, graduating Spring 2026)
-(24, 4, 2025); -- Youssef (Freshman - enrolled Fall 2025)
+(23, 4, 2022), -- Omar (Senior - enrolled Fall 2022, graduating Spring 2026)
+(24, 4, 2025); -- Ismail (Freshman - enrolled Fall 2025)
 
 -- 2. Assign Programs (Majors, Minors, Concentrations)
 INSERT INTO student_programs (student_id, program_id, type) VALUES
--- Amina (CS + Math Minor)
+-- Omar (CS + Math Minor)
 (23, 3, 'MAJOR'), (23, 32, 'MINOR'),
--- Youssef (CS + Leadership Minor)
+-- Ismail (CS + Leadership Minor)
 (24, 3, 'MAJOR'), (24, 30, 'MINOR');
 
 -- ==========================================================
@@ -1466,12 +1465,12 @@ INSERT INTO student_programs (student_id, program_id, type) VALUES
 -- 10. STUDENT TRANSCRIPTS
 -- ==========================================================
 -- Timeline: Fall 2025 is current semester (semester_id = 13)
--- Amina: Senior, enrolled Fall 2022 (semester_id = 4)
--- Youssef: Freshman, enrolled Fall 2025 (semester_id = 13)
+-- Omar: Senior, enrolled Fall 2022 (semester_id = 4)
+-- Ismail: Freshman, enrolled Fall 2025 (semester_id = 13)
 
 INSERT INTO student_transcript (student_id, course_id, semester_id, grade, status, credits_earned) VALUES
 -- ==========================================================
--- AMINA (CS Senior - enrolled Fall 2022, graduating Spring 2026)
+-- OMAR (CS Senior - enrolled Fall 2022, graduating Spring 2026)
 -- ==========================================================
 
 -- Year 1 Fall (Fall 2022 - semester_id = 4)
@@ -1535,7 +1534,7 @@ INSERT INTO student_transcript (student_id, course_id, semester_id, grade, statu
 (23, 120, 13, 'IP', 'IN_PROGRESS', 0), -- Social Science
 
 -- ==========================================================
--- YOUSSEF (CS Freshman - enrolled Fall 2025, first semester)
+-- ISMAIL (CS Freshman - enrolled Fall 2025, first semester)
 -- ==========================================================
 
 -- Year 1 Fall (Fall 2025 - semester_id = 13) - CURRENT SEMESTER
@@ -1548,21 +1547,22 @@ INSERT INTO student_transcript (student_id, course_id, semester_id, grade, statu
 (24, 10, 13, 'IP', 'IN_PROGRESS', 0);  -- ARB 1241 Arabic
 
 -- ==========================================================
+
 -- ===== End population/10_student_transcripts.sql =====
 
 -- ===== Begin population/11_student_plan_drafts.sql =====
--- 11. STUDENT PLAN DRAFTS (Amina only)
+-- 11. STUDENT PLAN DRAFTS
 -- ==========================================================
 
 INSERT INTO student_plan_drafts (draft_id, student_id, name, is_default) VALUES
-(1, 23, 'Default Plan', TRUE),   -- Amina
-(2, 24, 'Default Plan', TRUE);   -- Youssef
+(1, 23, 'Default Plan', TRUE),   -- Omar
+(2, 24, 'Default Plan', TRUE);   -- Ismail
 
 -- ==========================================================
 -- ===== End population/11_student_plan_drafts.sql =====
 
 -- ===== Begin population/12_student_plans.sql =====
--- 12. STUDENT PLANS (Amina only)
+-- 12. STUDENT PLANS
 -- ==========================================================
 
 -- NOTE: Fall 2024 courses are already in transcript as IN_PROGRESS
@@ -1579,10 +1579,10 @@ INSERT INTO student_plan_drafts (draft_id, student_id, name, is_default) VALUES
 -- 13. SEMESTER APPROVALS
 -- ==========================================================
 -- Timeline: Fall 2025 is current semester (semester_id = 13)
--- Amina's historical approvals starting from Fall 2022
+-- Omar's historical approvals starting from Fall 2022
 
 INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_status, advisor_comments, approved_at) VALUES
--- Amina's historical approvals from advisor (user_id = 4)
+-- Omar's historical approvals from advisor (user_id = 4)
 (23, 4, 4, 'APPROVED', 'Great start to the CS program. Excellent course selection.', '2022-08-25'),   -- Fall 2022
 (23, 5, 4, 'APPROVED', 'Good progress on prerequisites.', '2023-01-10'),                              -- Spring 2023
 (23, 7, 4, 'APPROVED', 'Nice mix of core CS and math courses.', '2023-08-20'),                        -- Fall 2023
@@ -1594,7 +1594,7 @@ INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_st
 -- Current semester awaiting completion (no approval needed yet)
 (23, 13, 4, 'PENDING', NULL, NULL);  -- Fall 2025 (current)
 
--- Youssef has no approvals yet (first semester, just started)
+-- Ismail has no approvals yet (first semester, just started)
 
 -- ==========================================================
 -- END OF COMPREHENSIVE POPULATION
@@ -1603,8 +1603,9 @@ INSERT INTO semester_approvals (student_id, semester_id, advisor_id, approval_st
 -- Summary Statistics:
 -- Current Semester: Fall 2025 (semester_id = 13)
 -- Next Planning Semester: Spring 2026 (semester_id = 14)
--- Students: 2 (Amina - Senior, Youssef - Freshman)
--- Advisors: 1 (Fatima Alaoui)
+-- Students: 2 (Omar - Senior, Ismail - Freshman)
+-- Advisors: 1 (Nasser Assem)
+
 -- ===== End population/13_semester_approvals.sql =====
 
 -- ===== Begin population/14_student_plan_semesters.sql =====
@@ -1617,10 +1618,10 @@ DELETE FROM student_plan_semesters WHERE draft_id = 1;
 DELETE FROM student_plan_semesters WHERE draft_id = 2;
 
 INSERT INTO student_plan_semesters (draft_id, semester_number, term, year, is_locked) VALUES
--- Amina's planning semester (only needs Spring 2026 to graduate)
+-- Omar's planning semester (only needs Spring 2026 to graduate)
 (1, 1, 'SPRING', 2026, FALSE),
 
--- Youssef's planning semesters (7 more semesters to complete degree)
+-- Ismail's planning semesters (7 more semesters to complete degree)
 (2, 1, 'SPRING', 2026, FALSE),
 (2, 2, 'FALL', 2026, FALSE),
 (2, 3, 'SPRING', 2027, FALSE),
@@ -1630,4 +1631,5 @@ INSERT INTO student_plan_semesters (draft_id, semester_number, term, year, is_lo
 (2, 7, 'SPRING', 2029, FALSE);
 
 -- ==========================================================
+
 -- ===== End population/14_student_plan_semesters.sql =====

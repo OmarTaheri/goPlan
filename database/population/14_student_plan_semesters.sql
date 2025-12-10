@@ -7,10 +7,10 @@ DELETE FROM student_plan_semesters WHERE draft_id = 1;
 DELETE FROM student_plan_semesters WHERE draft_id = 2;
 
 INSERT INTO student_plan_semesters (draft_id, semester_number, term, year, is_locked) VALUES
--- Amina's planning semester (only needs Spring 2026 to graduate)
+-- Omar's planning semester (only needs Spring 2026 to graduate)
 (1, 1, 'SPRING', 2026, FALSE),
 
--- Youssef's planning semesters (7 more semesters to complete degree)
+-- Ismail's planning semesters (7 more semesters to complete degree)
 (2, 1, 'SPRING', 2026, FALSE),
 (2, 2, 'FALL', 2026, FALSE),
 (2, 3, 'SPRING', 2027, FALSE),
@@ -20,3 +20,4 @@ INSERT INTO student_plan_semesters (draft_id, semester_number, term, year, is_lo
 (2, 7, 'SPRING', 2029, FALSE);
 
 -- ==========================================================
+

@@ -1,12 +1,12 @@
 -- 10. STUDENT TRANSCRIPTS
 -- ==========================================================
 -- Timeline: Fall 2025 is current semester (semester_id = 13)
--- Amina: Senior, enrolled Fall 2022 (semester_id = 4)
--- Youssef: Freshman, enrolled Fall 2025 (semester_id = 13)
+-- Omar: Senior, enrolled Fall 2022 (semester_id = 4)
+-- Ismail: Freshman, enrolled Fall 2025 (semester_id = 13)
 
 INSERT INTO student_transcript (student_id, course_id, semester_id, grade, status, credits_earned) VALUES
 -- ==========================================================
--- AMINA (CS Senior - enrolled Fall 2022, graduating Spring 2026)
+-- OMAR (CS Senior - enrolled Fall 2022, graduating Spring 2026)
 -- ==========================================================
 
 -- Year 1 Fall (Fall 2022 - semester_id = 4)
@@ -70,7 +70,7 @@ INSERT INTO student_transcript (student_id, course_id, semester_id, grade, statu
 (23, 120, 13, 'IP', 'IN_PROGRESS', 0), -- Social Science
 
 -- ==========================================================
--- YOUSSEF (CS Freshman - enrolled Fall 2025, first semester)
+-- ISMAIL (CS Freshman - enrolled Fall 2025, first semester)
 -- ==========================================================
 
 -- Year 1 Fall (Fall 2025 - semester_id = 13) - CURRENT SEMESTER
@@ -83,3 +83,4 @@ INSERT INTO student_transcript (student_id, course_id, semester_id, grade, statu
 (24, 10, 13, 'IP', 'IN_PROGRESS', 0);  -- ARB 1241 Arabic
 
 -- ==========================================================
+
