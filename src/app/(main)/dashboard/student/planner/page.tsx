@@ -579,23 +579,6 @@ export default function PlannerPage() {
           <p className="text-muted-foreground">View your academic history and plan future semesters</p>
         </div>
         <div className="flex items-center gap-3">
-          <Select value={activeDraft?.draft_id?.toString() || ""} onValueChange={(v) => loadPlanData(parseInt(v))}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select plan..." />
-            </SelectTrigger>
-            <SelectContent>
-              {drafts.map((d) => (
-                <SelectItem key={d.draft_id} value={d.draft_id.toString()}>
-                  {d.name} {d.is_default ? "(Default)" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline" size="icon" onClick={() => setShowNewDraftDialog(true)}>
-            <Plus className="h-4 w-4" />
-          </Button>
-
           <Button 
             variant="default" 
             size="sm"
@@ -615,6 +598,23 @@ export default function PlannerPage() {
           >
             <Sparkles className="h-4 w-4" />
             AI Planner
+          </Button>
+
+          <Select value={activeDraft?.draft_id?.toString() || ""} onValueChange={(v) => loadPlanData(parseInt(v))}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Select plan..." />
+            </SelectTrigger>
+            <SelectContent>
+              {drafts.map((d) => (
+                <SelectItem key={d.draft_id} value={d.draft_id.toString()}>
+                  {d.name} {d.is_default ? "(Default)" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline" size="icon" onClick={() => setShowNewDraftDialog(true)}>
+            <Plus className="h-4 w-4" />
           </Button>
 
           <Button variant="outline" size="icon" onClick={() => scrollContainer("left")}>
