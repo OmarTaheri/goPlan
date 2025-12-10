@@ -30,6 +30,7 @@ interface AIAction {
   course_code?: string;
   to_semester?: number;
   courses?: { course_code: string; to_semester: number }[];
+  new_semesters?: { after_semester: number; name: string }[];
   after_semester?: number;
   semester_name?: string;
   semester?: number;
@@ -50,6 +51,7 @@ interface AIPlannerPopupProps {
   majorName?: string;
   minorName?: string;
   historicalSemesters: number;
+  remainingCourses?: { course_code: string; title: string; credits: number; category: string }[];
   onAddCourse: (courseCode: string, semesterNum: number) => Promise<boolean>;
   onMoveCourse: (courseCode: string, toSemester: number) => Promise<boolean>;
   onRemoveCourse: (courseCode: string) => Promise<boolean>;
@@ -59,9 +61,9 @@ interface AIPlannerPopupProps {
 }
 
 const SUGGESTED_PROMPTS = [
+  "Finish my degree plan",
   "Is my next semester too heavy?",
   "What courses should I take next?",
-  "Review my entire plan",
   "Add another semester after my last one",
 ];
 
@@ -72,6 +74,7 @@ export function AIPlannerPopup({
   majorName,
   minorName,
   historicalSemesters,
+  remainingCourses,
   onAddCourse,
   onMoveCourse,
   onRemoveCourse,
@@ -118,6 +121,7 @@ export function AIPlannerPopup({
           majorName,
           minorName,
           historicalSemesters,
+          remainingCourses,
           chatHistory: messages.map(m => ({ role: m.role, content: m.content })),
         }),
       });
@@ -175,7 +179,6 @@ export function AIPlannerPopup({
             }
             break;
           case "add_multiple":
-          case "generate_plan":
             if (action.courses) {
               for (const course of action.courses) {
                 const courseSuccess = await onAddCourse(course.course_code, course.to_semester);
@@ -185,6 +188,24 @@ export function AIPlannerPopup({
               continue; // Skip the success/fail count below
             }
             break;
+          case "generate_plan":
+            // First create any new semesters needed
+            if (onAddSemester && action.new_semesters && action.new_semesters.length > 0) {
+              for (const sem of action.new_semesters) {
+                const semSuccess = await onAddSemester(sem.after_semester, sem.name);
+                if (semSuccess) successCount++;
+                else failCount++;
+              }
+            }
+            // Then add courses
+            if (action.courses) {
+              for (const course of action.courses) {
+                const courseSuccess = await onAddCourse(course.course_code, course.to_semester);
+                if (courseSuccess) successCount++;
+                else failCount++;
+              }
+            }
+            continue; // Skip the success/fail count below
           case "add_semester":
             if (onAddSemester && action.after_semester && action.semester_name) {
               success = await onAddSemester(action.after_semester, action.semester_name);

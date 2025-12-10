@@ -1342,6 +1342,36 @@ export default function PlannerPage() {
         majorName={recommendedCourses?.major_name}
         minorName={recommendedCourses?.minor_name || undefined}
         historicalSemesters={historicalSemesters}
+        remainingCourses={(() => {
+          if (!recommendedCourses) return [];
+          const remaining: { course_code: string; title: string; credits: number; category: string }[] = [];
+          
+          // Add degree courses
+          recommendedCourses.degree_courses?.forEach(c => {
+            remaining.push({ course_code: c.course_code, title: c.title, credits: c.credits, category: "Degree Requirements" });
+          });
+          
+          // Add GenEd courses from unfulfilled categories
+          recommendedCourses.gened_categories?.forEach(cat => {
+            if (!cat.fulfilled) {
+              cat.courses?.forEach(c => {
+                remaining.push({ course_code: c.course_code, title: c.title, credits: c.credits, category: `GenEd: ${cat.category_name}` });
+              });
+            }
+          });
+          
+          // Add minor courses
+          recommendedCourses.minor_courses?.forEach(c => {
+            remaining.push({ course_code: c.course_code, title: c.title, credits: c.credits, category: `Minor: ${recommendedCourses.minor_name}` });
+          });
+          
+          // Add concentration courses
+          recommendedCourses.concentration_courses?.forEach(c => {
+            remaining.push({ course_code: c.course_code, title: c.title, credits: c.credits, category: `Concentration: ${recommendedCourses.concentration_name}` });
+          });
+          
+          return remaining;
+        })()}
         onAddCourse={async (courseCode: string, semesterNum: number) => {
           // Find course by code
           const course = courses.find(c => c.course_code === courseCode);
