@@ -15,10 +15,10 @@ INSERT INTO semesters (semester_id, name, term, year, start_date, end_date, is_a
 (10, 'Fall 2024', 'FALL', 2024, '2024-09-01', '2024-12-15', FALSE),
 (11, 'Spring 2025', 'SPRING', 2025, '2025-01-15', '2025-05-15', FALSE),
 (12, 'Summer 2025', 'SUMMER', 2025, '2025-06-01', '2025-08-15', FALSE),
--- Current semester
-(13, 'Fall 2025', 'FALL', 2025, '2025-09-01', '2025-12-15', TRUE),
--- Future semesters (for planning)
-(14, 'Spring 2026', 'SPRING', 2026, '2026-01-15', '2026-05-15', FALSE),
+-- Current semester (students can see but not submit for this one yet)
+(13, 'Fall 2025', 'FALL', 2025, '2025-09-01', '2025-12-15', FALSE),
+-- Next semester (students can submit to advisors for this one)
+(14, 'Spring 2026', 'SPRING', 2026, '2026-01-15', '2026-05-15', TRUE),
 (15, 'Summer 2026', 'SUMMER', 2026, '2026-06-01', '2026-08-15', FALSE),
 (16, 'Fall 2026', 'FALL', 2026, '2026-09-01', '2026-12-15', FALSE),
 (17, 'Spring 2027', 'SPRING', 2027, '2027-01-15', '2027-05-15', FALSE),
