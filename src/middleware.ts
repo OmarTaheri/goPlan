@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyAccessToken } from '@/lib/auth/jwt';
 import { JWTPayload } from '@/lib/types/auth';
 
 // Paths that trigger the redirect check
